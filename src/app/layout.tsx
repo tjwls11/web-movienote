@@ -16,7 +16,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'MongoDB CRUD',
+  title: 'MOVIENOTE',
   description: 'Create, Read, Update, and Delete in MongoDB',
 }
 

@@ -18,6 +18,9 @@ export default function Naver() {
         </div>
         <div className="hidden lg:flex space-x-4">
           <div className="flex gap-4 items-center">
+            <div>
+              <Link href="/movie">MOVIE</Link>
+            </div>
             {status === 'authenticated' ? (
               <>
                 <div className="flex gap-2 items-center">
