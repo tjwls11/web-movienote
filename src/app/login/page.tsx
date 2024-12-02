@@ -52,7 +52,7 @@ export default function LoginPage() {
         </form>
         {/* 회원가입 링크 */}
         <Link href="/signup" className="text-sm font-medium text-gray-700">
-          너 회원 아니지? 회원가입하러 가기~
+          회원가입
         </Link>
         <SigninButton />
       </div>

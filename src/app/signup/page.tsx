@@ -130,14 +130,14 @@ export default function SignPage() {
             type="submit"
             className="w-full bg-green-700 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
           >
-            너 회원 아니지? ㅋㅋㅋㅋ회원가입
+            회원가입
           </button>
         </form>
         <Link
           href="/login"
           className="text-sm font-medium text-gray-700 mt-4 block text-center"
         >
-          뭐?? 회원이라고?? 로그인하러가!
+          로그인
         </Link>
       </div>
     </div>
