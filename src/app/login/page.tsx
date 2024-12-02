@@ -7,7 +7,7 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="w-full max-w-sm bg-white shadow-lg rounded-lg p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          로그인
+          로그인 login
         </h2>
         <form className="space-y-4">
           {/*이메일 입력 */}
