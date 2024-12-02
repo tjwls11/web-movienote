@@ -47,7 +47,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full bg-green-700 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
           >
-            뭐?? 회원이라고?? 로그인하러가!
+            로그인
           </button>
         </form>
         {/* 회원가입 링크 */}
