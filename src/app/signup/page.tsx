@@ -48,8 +48,8 @@ export default function SignPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="w-full max-w-sm bg-white shadow-lg rounded-lg p-8">
+    <div className="flex flex-col items-center justify-start min-h-screen pt-20">
+      <div className="w-full max-w-sm shadow-2xl drop-shadow-2xl rounded-lg p-8 border-t border-gray-300">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           회원가입
         </h2>

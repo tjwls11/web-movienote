@@ -4,10 +4,10 @@ import React from 'react'
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="w-full max-w-sm bg-white shadow-lg rounded-lg p-8">
+    <div className="flex flex-col items-center justify-start min-h-screen pt-20">
+      <div className="w-full max-w-sm shadow-2xl drop-shadow-2xl rounded-lg p-8 border-t border-gray-300">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          로그인 login
+          로그인
         </h2>
         <form className="space-y-4">
           {/*이메일 입력 */}
@@ -51,10 +51,15 @@ export default function LoginPage() {
           </button>
         </form>
         {/* 회원가입 링크 */}
-        <Link href="/signup" className="text-sm font-medium text-gray-700">
-          회원가입
-        </Link>
-        <SigninButton />
+        <div className=" text-right pt-1">
+          <Link href="/signup" className="text-sm font-medium text-gray-700 ">
+            회원가입
+          </Link>
+        </div>
+
+        <div className="justify-center mr-3">
+          <SigninButton />
+        </div>
       </div>
     </div>
   )

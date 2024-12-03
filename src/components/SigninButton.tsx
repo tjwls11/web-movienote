@@ -35,7 +35,7 @@ export default function SigninButton() {
         >
           <Image src="/github-logo.png" height={30} width={30} alt="google" />
           <span className="bg-green-800 text-white px-4 py-3 rounded-lg">
-            Sign in with Gihhub
+            Sign in with Github
           </span>
         </button>
       </form>
