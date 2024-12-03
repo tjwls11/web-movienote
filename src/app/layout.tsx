@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <NextAuthProvider>
           {/* 폭정렬 */}
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto pt-16">
             <Navbar />
             <div className="mt-8">{children}</div>
           </div>
