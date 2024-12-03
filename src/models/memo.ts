@@ -1,13 +1,13 @@
 import mongoose, { Schema } from 'mongoose'
 
-const memoScjema = new Schema(
+const memoSchema = new Schema(
   {
-    email: { type: String, required: true },
+    title: String,
+    description: String,
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 )
-const Memo = mongoose.models.Log || mongoose.model('Memo', memoScjema)
+
+const Memo = mongoose.models.Memo || mongoose.model('Memo', memoSchema)
 
 export default Memo

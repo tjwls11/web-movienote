@@ -13,12 +13,47 @@ export async function POST(request: NextRequest) {
     }
     await connectMongoDB()
     await Memo.create({ title, description })
-    return NextResponse.json({ message: 'Memo created' }, { status: 201 })
+    return NextResponse.json({ message: 'Topic created' }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/memos:', error)
+    console.error('Error in POST /api/topics:', error)
     return NextResponse.json(
       { message: 'Internal Server Error' },
       { status: 500 }
     )
   }
 }
+
+// export async function GET() {
+//   try {
+//     await connectMongoDB()
+//     const topics = await Memo.find()
+//     return NextResponse.json({ topics })
+//   } catch (error) {
+//     console.error('Error in GET /api/topics:', error)
+//     return NextResponse.json(
+//       { message: 'Internal Server Error' },
+//       { status: 500 }
+//     )
+//   }
+// }
+
+// export async function DELETE(request: NextRequest) {
+//   try {
+//     const id = request.nextUrl.searchParams.get('id')
+//     if (!id) {
+//       return NextResponse.json({ message: 'ID is required' }, { status: 400 })
+//     }
+//     await connectMongoDB()
+//     const deletedTopic = await Memo.findByIdAndDelete(id)
+//     if (!deletedTopic) {
+//       return NextResponse.json({ message: 'Topic not found' }, { status: 404 })
+//     }
+//     return NextResponse.json({ message: 'Topic deleted' }, { status: 200 })
+//   } catch (error) {
+//     console.error('Error in DELETE /api/topics', error)
+//     return NextResponse.json(
+//       { message: 'internal Server Error' },
+//       { status: 500 }
+//     )
+//   }
+// }
