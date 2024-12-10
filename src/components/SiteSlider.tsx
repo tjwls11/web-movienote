@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { TbDeviceTvOld } from 'react-icons/tb'
+import { MdMovieEdit } from 'react-icons/md'
+import { IoTicketOutline } from 'react-icons/io5'
 
 const ottSites = [
   { name: 'Netflix', url: 'https://www.netflix.com' },
@@ -71,12 +74,8 @@ export default function SiteSlider() {
       {/* 버튼 그룹 */}
       <div className="flex justify-center gap-8 sm:gap-16">
         <button className="group flex flex-col items-center">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl">
-            <img
-              src="/community-icon.png"
-              alt="커뮤니티"
-              className="w-10 h-10 sm:w-12 sm:h-12"
-            />
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl text-white text-4xl">
+            <MdMovieEdit />
           </div>
           <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
             커뮤니티가기
@@ -90,12 +89,8 @@ export default function SiteSlider() {
             setShowTicketing(false)
           }}
         >
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl">
-            <img
-              src="/ott-icon.png"
-              alt="OTT"
-              className="w-10 h-10 sm:w-12 sm:h-12"
-            />
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl text-white text-4xl">
+            <TbDeviceTvOld />
           </div>
           <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
             OTT
@@ -109,12 +104,8 @@ export default function SiteSlider() {
             setShowOtt(false)
           }}
         >
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl">
-            <img
-              src="/ticket-icon.png"
-              alt="예매사이트"
-              className="w-10 h-10 sm:w-12 sm:h-12"
-            />
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl text-white text-4xl">
+            <IoTicketOutline />
           </div>
           <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
             영화 예매사이트

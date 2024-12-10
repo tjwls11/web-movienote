@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface Movie {
   id: number
@@ -7,21 +8,19 @@ interface Movie {
   release_date: string
   vote_average: number
   poster_path: string
-  genres: { id: number; name: string }[] // 장르 정보
-  original_language: string // 원본 언어 (한국어, 영어 등)
+  genres: { id: number; name: string }[]
+  original_language: string
 }
-
-type Genre = 28 | 35 | 18 | 878 | 16 | 53 | 27 | 10749 | 14 | null // 장르 타입 정의
 
 export default function MoviePage() {
   const [movies, setMovies] = useState<Movie[]>([])
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]) // 필터링된 영화 리스트
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([])
   const [error, setError] = useState<string | null>(null)
   const [pageNumber, setPageNumber] = useState<number>(1)
-  const [searchTerm, setSearchTerm] = useState<string>('') // 검색어 상태
-  const [sortOption, setSortOption] = useState<string>('rating') // 정렬 옵션 (별점순)
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null) // 장르 선택 (string | null 타입)
-  const [selectedOTT, setSelectedOTT] = useState<string | null>(null) // OTT 선택
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [sortOption, setSortOption] = useState<string>('rating')
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+  const [selectedOTT, setSelectedOTT] = useState<string | null>(null)
 
   const API_KEY = process.env.NEXT_PUBLIC_MOVIE_API_KEY
   const BASE_URL = 'https://api.themoviedb.org/3/movie/now_playing'
@@ -42,6 +41,7 @@ export default function MoviePage() {
         const data = await response.json()
         setMovies(data.results)
       } catch (err) {
+        console.error('영화 데이터를 가져오는 중 오류가 발생했습니다.', err)
         setError('영화 데이터를 가져오는 중 오류가 발생했습니다.')
       }
     }
@@ -51,52 +51,44 @@ export default function MoviePage() {
   useEffect(() => {
     let filtered = [...movies]
 
-    // 검색어 필터링
     if (searchTerm) {
       filtered = filtered.filter((movie) =>
         movie.title.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
-    // 장르 필터링
     if (selectedGenre !== null) {
-      // selectedGenre를 숫자로 변환하여 필터링
       const genreId = Number(selectedGenre)
       filtered = filtered.filter((movie) =>
         movie.genres.some((genre) => genre.id === genreId)
       )
     }
 
-    // OTT 필터링 (OTT 정보는 API에서 제공되지 않으므로 예시로 구현)
     if (selectedOTT) {
       filtered = filtered.filter((movie) =>
         movie.title.toLowerCase().includes(selectedOTT.toLowerCase())
       )
     }
 
-    // 정렬 (별점순)
     if (sortOption === 'rating') {
       filtered = filtered.sort((a, b) => b.vote_average - a.vote_average)
     }
 
-    // 한국영화 필터링
     if (sortOption === 'korean' || selectedGenre === null) {
       filtered = filtered.filter((movie) => movie.original_language === 'ko')
     }
 
-    // 외국영화 필터링
     if (sortOption === 'foreign') {
       filtered = filtered.filter((movie) => movie.original_language !== 'ko')
     }
 
     setFilteredMovies(filtered)
-  }, [movies, searchTerm, sortOption, selectedGenre, selectedOTT, pageNumber])
+  }, [movies, searchTerm, sortOption, selectedGenre, selectedOTT])
 
   const handlePageChange = (page: number) => {
     setPageNumber(page)
   }
 
-  // 장르 목록
   const genres = {
     28: '액션',
     35: '코미디',
@@ -115,7 +107,6 @@ export default function MoviePage() {
 
       {error && <div className="text-red-500 text-center">{error}</div>}
 
-      {/* 검색 기능 */}
       <div className="mb-4 flex justify-center">
         <input
           type="text"
@@ -126,7 +117,6 @@ export default function MoviePage() {
         />
       </div>
 
-      {/* 정렬 기능 */}
       <div className="flex justify-center gap-4 mb-4">
         <select
           value={sortOption}
@@ -139,23 +129,21 @@ export default function MoviePage() {
         </select>
       </div>
 
-      {/* 장르 선택 */}
       <div className="flex justify-center gap-4 mb-4">
         <select
           value={selectedGenre || ''}
-          onChange={(e) => setSelectedGenre(e.target.value)} // selectedGenre를 string으로 다룸
+          onChange={(e) => setSelectedGenre(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-md"
         >
           <option value="">모든 장르</option>
-          {Object.keys(genres).map((genreId) => (
-            <option key={genreId} value={genreId}>
-              {genres[genreId as unknown as keyof typeof genres]}
+          {Object.entries(genres).map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
             </option>
           ))}
         </select>
       </div>
 
-      {/* OTT 선택 (예시로 구현) */}
       <div className="flex justify-center gap-4 mb-4">
         <select
           value={selectedOTT ?? ''}
@@ -168,7 +156,6 @@ export default function MoviePage() {
         </select>
       </div>
 
-      {/* 영화 카드 출력 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {filteredMovies.length > 0 ? (
           filteredMovies.map((movie) => (
@@ -176,9 +163,11 @@ export default function MoviePage() {
               key={movie.id}
               className="movie-card bg-white shadow-lg rounded-lg overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300"
             >
-              <img
+              <Image
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title}
+                width={500}
+                height={750}
                 className="w-full h-64 object-cover"
               />
               <div className="p-4">
@@ -199,7 +188,6 @@ export default function MoviePage() {
         )}
       </div>
 
-      {/* 페이지네이션 */}
       <div className="flex justify-center mt-8">
         <button
           onClick={() => handlePageChange(pageNumber - 1)}

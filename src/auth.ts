@@ -6,7 +6,6 @@ import { connectToDatabase } from '@/libs/mongodb'
 import { JWT } from 'next-auth/jwt'
 import { User as NextAuthUser } from 'next-auth'
 
-// 사용자 정의 타입 확장
 interface CustomUser extends NextAuthUser {
   id: string
   email: string
@@ -14,13 +13,15 @@ interface CustomUser extends NextAuthUser {
   type?: string
 }
 
-// JWT 타입 확장
 interface ExtendedJWT extends JWT {
   id?: string
   type?: string
 }
 
-// 세션 타입 확장
+interface AuthError extends Error {
+  message: string
+}
+
 declare module 'next-auth' {
   interface Session {
     user: CustomUser
@@ -62,9 +63,10 @@ const handler = NextAuth({
             name: user.name || null,
             type: user.type || 'credentials',
           }
-        } catch (error: any) {
-          console.error('로그인 에러:', error)
-          throw error
+        } catch (error) {
+          const authError = error as AuthError
+          console.error('로그인 에러:', authError)
+          throw authError
         }
       },
     }),

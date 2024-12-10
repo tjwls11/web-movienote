@@ -1,99 +1,149 @@
+import Image from 'next/image'
 import SiteSlider from '@/components/SiteSlider'
+import monoImage from '/public/mono.png'
+
+interface Movie {
+  id: number
+  title: string
+  release_date: string
+  poster_path: string
+}
+
+interface VideoResult {
+  id: string
+  key: string
+  name: string
+  site: string
+  type: string
+  iso_639_1: string
+  published_at: string
+}
 
 export default async function Home() {
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_MOVIE_API_KEY
 
-  // 현재 상영작과 개봉 예정작 모두 가져오기
-  const [
-    koreanNowPlaying,
-    koreanUpcoming,
-    internationalNowPlaying,
-    internationalUpcoming,
-  ] = await Promise.all([
-    // 한국 현재 상영작
+  const [koreanNowPlaying, koreanUpcoming] = await Promise.all([
     fetch(
-      `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=ko-KR&region=KR`
+      `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=ko-KR&region=KR&page=1`
     ),
-    // 한국 개봉 예정작
     fetch(
-      `https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}&language=ko-KR&region=KR`
-    ),
-    // 해외 현재 상영작
-    fetch(
-      `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=en-US`
-    ),
-    // 해외 개봉 예정작
-    fetch(
-      `https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}&language=en-US`
+      `https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}&language=ko-KR&region=KR&page=1`
     ),
   ]).then((responses) => Promise.all(responses.map((res) => res.json())))
 
-  // 모든 영화 합치기
-  const allMovies = [
-    ...koreanNowPlaying.results,
-    ...koreanUpcoming.results,
-    ...internationalNowPlaying.results,
-    ...internationalUpcoming.results,
-  ]
+  const allMovies = [...koreanNowPlaying.results, ...koreanUpcoming.results]
 
-  // 중복 제거 (같은 영화가 여러 리스트에 있을 수 있음)
-  const uniqueMovies = Array.from(new Set(allMovies.map((m) => m.id)))
-    .map((id) => allMovies.find((m) => m.id === id))
-    .filter((movie) => movie?.poster_path) // 포스터가 있는 영화만 선택
+  const uniqueMovies = Array.from(new Set(allMovies.map((m: Movie) => m.id)))
+    .map((id) => allMovies.find((m: Movie) => m.id === id))
+    .filter((movie): movie is Movie => movie?.poster_path != null)
+    .sort(
+      (a, b) =>
+        new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
+    )
 
-  // 랜덤 영화 선택
+  const recentMovies = uniqueMovies.slice(0, 10)
   const randomMovie =
-    uniqueMovies[Math.floor(Math.random() * uniqueMovies.length)]
+    recentMovies[Math.floor(Math.random() * recentMovies.length)]
 
-  // 예고편 가져오기
   const videoResponse = await fetch(
-    `https://api.themoviedb.org/3/movie/${randomMovie.id}/videos?api_key=${TMDB_API_KEY}`
+    `https://api.themoviedb.org/3/movie/${randomMovie.id}/videos?api_key=${TMDB_API_KEY}&language=ko-KR`
   )
   const videoData = await videoResponse.json()
 
-  // 예고편 선택 (최신 예고편 우선)
-  const trailer =
-    videoData.results
-      .filter(
-        (video: any) => video.type === 'Trailer' && video.site === 'YouTube'
+  let trailer = videoData.results
+    .filter(
+      (video: VideoResult) =>
+        video.type === 'Trailer' && video.site === 'YouTube'
+    )
+    .sort((a: VideoResult, b: VideoResult) => {
+      if (a.iso_639_1 === 'ko' && b.iso_639_1 !== 'ko') return -1
+      if (a.iso_639_1 !== 'ko' && b.iso_639_1 === 'ko') return 1
+      return (
+        new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
       )
-      .sort(
-        (a: any, b: any) =>
-          new Date(b.published_at).getTime() -
-          new Date(a.published_at).getTime()
-      )[0] || videoData.results[0]
+    })[0]
+
+  if (!trailer) {
+    const enVideoResponse = await fetch(
+      `https://api.themoviedb.org/3/movie/${randomMovie.id}/videos?api_key=${TMDB_API_KEY}&language=en-US`
+    )
+    const enVideoData = await enVideoResponse.json()
+    trailer = enVideoData.results.find(
+      (video: VideoResult) =>
+        video.type === 'Trailer' && video.site === 'YouTube'
+    )
+  }
+
+  const releaseDate = new Date(randomMovie.release_date)
+  const formattedDate = new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(releaseDate)
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-[#f5f5f5] to-[#e5e5e5]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 상단 섹션 */}
-        <h1 className="text-3xl font-bold text-[#2d5a27] mb-8">
-          오늘의 추천 영화: {randomMovie.title}
-        </h1>
-
-        {/* 메인 콘텐츠 */}
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-16">
-          {/* 왼쪽: 예고편 */}
-          <div className="w-full lg:w-2/3">
-            {trailer ? (
-              <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-white">
-                <iframe
-                  className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${trailer.key}`}
-                  title={trailer.name}
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-white flex items-center justify-center">
-                <p className="text-gray-500">예고편이 준비되지 않았습니다.</p>
-              </div>
-            )}
+    <div className="min-h-screen w-full bg-slate-200">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 ">
+        <div className="text-center mb-16 ">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            오늘의 추천 영화
+          </h1>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-medium text-gray-800">
+              {randomMovie.title}
+            </h2>
+            <p className="text-gray-500">개봉일: {formattedDate}</p>
           </div>
         </div>
 
-        {/* 하단 버튼 그룹 */}
-        <SiteSlider />
+        <div className="flex flex-col lg:flex-row gap-12 mb-16">
+          <div className="w-full lg:w-2/3">
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              {trailer ? (
+                <div className="aspect-video">
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${trailer.key}`}
+                    title={trailer.name}
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video bg-gray-50 flex items-center justify-center">
+                  <p className="text-gray-400">예고편이 준비되지 않았습니다.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="w-full lg:w-1/3 flex justify-center items-center">
+            <div>
+              <Image
+                src={monoImage}
+                alt="Movie Recommender Mascot"
+                width={400}
+                height={550}
+                className="drop-shadow-xl"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative py-8 mb-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-100"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="px-6 text-gray-400 text-sm">
+              다른 영화 정보 사이트
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <SiteSlider />
+        </div>
       </div>
     </div>
   )

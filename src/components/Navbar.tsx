@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FiAlignJustify } from 'react-icons/fi'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
@@ -10,13 +10,29 @@ import { VscSignOut } from 'react-icons/vsc'
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { data: session, status } = useSession()
+  const [currentImage, setCurrentImage] = useState('/default-avatar.png')
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/user/profile')
+          const data = await response.json()
+
+          if (data.success) {
+            setCurrentImage(data.user.image)
+          }
+        } catch (error) {
+          console.error('Failed to fetch user info:', error)
+        }
+      }
+    }
+
+    fetchUserInfo()
+  }, [session])
 
   const handleSignOut = async () => {
     await signOut({ redirect: true, callbackUrl: '/' })
-  }
-
-  const getProfileImage = () => {
-    return session?.user?.image || '/default-avatar.png'
   }
 
   return (
@@ -31,10 +47,11 @@ export default function Navbar() {
             <Link href="/mypage">
               <Image
                 className="rounded-full cursor-pointer ring-2 ring-[#2d5a27] hover:ring-[#1a3517] transition-colors"
-                src={getProfileImage()}
+                src={currentImage}
                 width={40}
                 height={40}
                 alt={session.user?.name || 'user'}
+                priority
               />
             </Link>
             <button
@@ -71,11 +88,12 @@ export default function Navbar() {
                 <Link href="/mypage">
                   <div className="flex gap-2 items-center cursor-pointer">
                     <Image
-                      className="rounded-full ring-2 ring-[#2d5a27]"
-                      src={getProfileImage()}
+                      className="rounded-full ring-2 ring-[#2d5a27]  w-auto h-auto"
+                      src={currentImage}
                       width={40}
                       height={40}
                       alt={session.user?.name || 'user'}
+                      priority
                     />
                     <span className="text-[#2d5a27] font-medium">
                       {session.user?.name}

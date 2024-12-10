@@ -17,7 +17,6 @@ export default function SignPage() {
     const value = e.target.value
     setPassword(value)
 
-    // 유효성 검사: 최소 8자, 하나 이상의 숫자 포함
     if (value.length < 8 || !/\d/.test(value)) {
       setPasswordError(
         '비밀번호는 최소 8자 이상이어야 하며 숫자를 포함해야 합니다.'
@@ -33,7 +32,6 @@ export default function SignPage() {
     const value = e.target.value
     setConfirmPassword(value)
 
-    // 비밀번호와 동일한지 확인
     if (value !== password) {
       setConfirmPasswordError('비밀번호가 일치하지 않습니다.')
     } else {
@@ -57,11 +55,15 @@ export default function SignPage() {
 
         if (res.ok) {
           setSuccessMessage('회원가입이 성공적으로 완료되었습니다.')
+          setErrorMessage('')
         } else {
           setErrorMessage(data.message || '회원가입에 실패했습니다.')
+          setSuccessMessage('')
         }
       } catch (error) {
+        console.error('회원가입 에러:', error)
         setErrorMessage('서버 오류가 발생했습니다.')
+        setSuccessMessage('')
       }
     } else {
       alert('입력 정보를 다시 확인해주세요.')

@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false) // 비밀번호 가시성 상태 추가
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -20,11 +20,11 @@ export default function LoginPage() {
     }
   }, [status, router])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
 
-    console.log('로그인 시도:', { email }) // 로깅 추가
+    console.log('로그인 시도:', { email })
 
     try {
       const result = await signIn('credentials', {
@@ -33,19 +33,19 @@ export default function LoginPage() {
         redirect: false,
       })
 
-      console.log('로그인 결과:', result) // 로깅 추가
+      console.log('로그인 결과:', result)
 
       if (result?.error) {
         setError(result.error)
       } else if (result?.ok) {
         router.push('/')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      // 'any' 대신 'unknown'을 사용하여 타입 안전성 향상
       console.error('로그인 에러:', error)
       setError('로그인 중 오류가 발생했습니다.')
     }
   }
-
   return (
     <div className="flex flex-col items-center justify-start min-h-screen pt-20">
       <div className="w-full max-w-sm shadow-2xl drop-shadow-2xl rounded-lg p-8 border-t border-gray-300">
