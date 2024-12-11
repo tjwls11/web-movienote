@@ -6,11 +6,20 @@ import Image from 'next/image'
 import { FaHistory, FaHeart, FaComment, FaCamera } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
 
+interface UserData {
+  image: string
+  name: string
+  email: string
+  createdAt?: string
+}
+
 export default function MyPage() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentImage, setCurrentImage] = useState('/default-avatar.png')
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -26,10 +35,13 @@ export default function MyPage() {
           const data = await response.json()
 
           if (data.success) {
+            setUserData(data.user)
             setCurrentImage(data.user.image)
           }
         } catch (error) {
           console.error('Failed to fetch user info:', error)
+        } finally {
+          setIsLoading(false)
         }
       }
     }
@@ -59,27 +71,17 @@ export default function MyPage() {
 
         if (data.success) {
           setCurrentImage(data.user.image)
-          // 세션 업데이트
-          await update({
-            ...session,
-            user: {
-              ...session?.user,
-              image: data.user.image,
-            },
-          })
+          await update({ image: data.user.image })
         }
       } catch (error) {
         console.error('Error uploading image:', error)
+        alert('이미지 업로드에 실패했습니다.')
       }
     }
   }
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <div>Loading...</div>
-  }
-
-  if (!session?.user) {
-    return null
   }
 
   return (
@@ -87,7 +89,7 @@ export default function MyPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* 왼쪽 사이드바: 프로필 섹션 */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+          <div className="bg-white rounded-xl shadow-lg p-6 top-24">
             <div className="flex flex-col items-center text-center">
               <div className="relative">
                 <Image
@@ -95,11 +97,13 @@ export default function MyPage() {
                   alt="Profile"
                   width={120}
                   height={120}
+                  priority
                   className="rounded-full mb-4 ring-2 ring-[#2d5a27]"
                 />
                 <button
                   onClick={handleImageClick}
                   className="absolute bottom-4 right-0 bg-[#2d5a27] p-2 rounded-full text-white hover:bg-[#234620] transition-colors"
+                  title="프로필 이미지 변경"
                 >
                   <FaCamera />
                 </button>
@@ -112,13 +116,18 @@ export default function MyPage() {
                 />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                {session.user.name}
+                {userData?.name || session?.user?.name}
               </h2>
-              <p className="text-gray-600">{session.user.email}</p>
+              <p className="text-gray-600">
+                {userData?.email || session?.user?.email}
+              </p>
 
               <div className="w-full space-y-3 mt-2">
                 <div className="text-sm text-gray-600">
-                  가입일: {new Date().toLocaleDateString()}
+                  가입일:{' '}
+                  {userData?.createdAt
+                    ? new Date(userData.createdAt).toLocaleDateString()
+                    : new Date().toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -159,6 +168,9 @@ export default function MyPage() {
                 <FaHistory className="text-[#2d5a27]" /> 최근에 본 영화
               </h3>
               {/* 최근 본 영화 리스트 */}
+              <div className="text-gray-500 text-center py-4">
+                최근에 본 영화가 없습니다.
+              </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -166,6 +178,9 @@ export default function MyPage() {
                 <FaHeart className="text-[#2d5a27]" /> 관심있는 영화
               </h3>
               {/* 좋아요한 영화 리스트 */}
+              <div className="text-gray-500 text-center py-4">
+                관심 표시한 영화가 없습니다.
+              </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -173,6 +188,9 @@ export default function MyPage() {
                 <FaComment className="text-[#2d5a27]" /> 내 리뷰
               </h3>
               {/* 리뷰 리스트 */}
+              <div className="text-gray-500 text-center py-4">
+                작성한 리뷰가 없습니다.
+              </div>
             </div>
           </div>
         </div>
