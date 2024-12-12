@@ -24,7 +24,7 @@ export default function SiteSlider() {
   const [showTicketing, setShowTicketing] = useState(false)
 
   return (
-    <>
+    <div className="w-full">
       {/* OTT 슬라이더 */}
       <div
         className={`fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-sm shadow-lg transition-transform duration-300 ${
@@ -72,13 +72,13 @@ export default function SiteSlider() {
       </div>
 
       {/* 버튼 그룹 */}
-      <div className="flex justify-center gap-8 sm:gap-16">
+      <div className="flex justify-center gap-8 sm:gap-16 w-full">
         <button className="group flex flex-col items-center">
           <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl text-white text-4xl">
             <MdMovieEdit />
           </div>
           <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
-            커뮤니티가기
+            커뮤니티
           </span>
         </button>
 
@@ -108,10 +108,10 @@ export default function SiteSlider() {
             <IoTicketOutline />
           </div>
           <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
-            영화 예매사이트
+            예매사이트
           </span>
         </button>
       </div>
-    </>
+    </div>
   )
 }

@@ -62,7 +62,7 @@ export default async function Home() {
 
     if (allMovies.length === 0) {
       return (
-        <div className="min-h-screen w-full bg-slate-200 flex items-center justify-center">
+        <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               현재 표시할 영화가 없습니다
@@ -139,69 +139,67 @@ export default async function Home() {
     }).format(releaseDate)
 
     return (
-      <div className="min-h-screen w-full bg-slate-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 ">
-          <div className="text-center mb-16 ">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              오늘의 추천 영화
-            </h1>
-            <div className="space-y-2">
-              <h2 className="text-3xl font-medium text-gray-800">
-                {randomMovie.title}
-              </h2>
-              <p className="text-gray-500">개봉일: {formattedDate}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col lg:flex-row gap-12 mb-16">
-            <div className="w-full lg:w-2/3">
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                {trailer ? (
-                  <div className="aspect-video">
-                    <iframe
-                      className="w-full h-full"
-                      src={`https://www.youtube.com/embed/${trailer.key}`}
-                      title={trailer.name}
-                      allowFullScreen
-                    />
-                  </div>
-                ) : (
-                  <div className="aspect-video bg-gray-50 flex items-center justify-center">
-                    <p className="text-gray-400">
-                      예고편이 준비되지 않았습니다.
-                    </p>
-                  </div>
-                )}
+      <div className="min-h-screen w-full bg-white">
+        {/* 메인 섹션 */}
+        <div className="w-full bg-gradient-to-b from-gray-50 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                오늘의 추천 영화
+              </h1>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-medium bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+                  {randomMovie.title}
+                </h2>
+                <p className="text-gray-500 text-sm">{formattedDate} 개봉</p>
               </div>
             </div>
 
-            <div className="w-full lg:w-1/3 flex justify-center items-center">
-              <div>
+            <div className="flex flex-col lg:flex-row gap-8 items-center">
+              <div className="w-full lg:w-2/3">
+                <div className="rounded-xl overflow-hidden shadow-2xl bg-white">
+                  {trailer ? (
+                    <div className="aspect-video">
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${trailer.key}`}
+                        title={trailer.name}
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video bg-gray-50 flex items-center justify-center">
+                      <p className="text-gray-400">
+                        예고편이 준비되지 않았습니다.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="w-full lg:w-1/3 flex justify-center items-center">
                 <Image
                   src={monoImage}
                   alt="Movie Recommender Mascot"
-                  width={400}
-                  height={550}
-                  className="drop-shadow-xl"
+                  width={300}
+                  height={400}
+                  className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="relative py-8 mb-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-100"></div>
-            </div>
-            <div className="relative flex justify-center">
-              <span className="px-6 text-gray-400 text-sm">
+        <div className="bg-white py-16">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex flex-col items-center">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 다른 영화 정보 사이트
-              </span>
+              </h3>
+              <div className="w-20 h-1 bg-emerald-500 rounded-full mb-12"></div>
+              <SiteSlider />
             </div>
-          </div>
-
-          <div>
-            <SiteSlider />
           </div>
         </div>
       </div>
@@ -209,7 +207,7 @@ export default async function Home() {
   } catch (error) {
     console.error('에러 발생:', error)
     return (
-      <div className="min-h-screen w-full bg-slate-200 flex items-center justify-center">
+      <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             죄송합니다. 데이터를 불러오는 중 문제가 발생했습니다.
