@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { TbDeviceTvOld } from 'react-icons/tb'
 import { MdMovieEdit } from 'react-icons/md'
 import { IoTicketOutline } from 'react-icons/io5'
+import Link from 'next/link'
 
 const ottSites = [
   { name: 'Netflix', url: 'https://www.netflix.com' },
@@ -73,14 +74,16 @@ export default function SiteSlider() {
 
       {/* 버튼 그룹 */}
       <div className="flex justify-center gap-8 sm:gap-16 w-full">
-        <button className="group flex flex-col items-center">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl text-white text-4xl">
-            <MdMovieEdit />
-          </div>
-          <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
-            커뮤니티
-          </span>
-        </button>
+        <Link href="/board">
+          <button className="group flex flex-col items-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#2d5a27] rounded-full flex items-center justify-center hover:bg-[#1a3517] transition-colors shadow-lg hover:shadow-xl text-white text-4xl">
+              <MdMovieEdit />
+            </div>
+            <span className="mt-2 text-base sm:text-lg font-medium text-[#2d5a27]">
+              커뮤니티
+            </span>
+          </button>
+        </Link>
 
         <button
           className="group flex flex-col items-center"

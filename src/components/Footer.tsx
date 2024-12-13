@@ -32,6 +32,13 @@ export default function Footer() {
             <IoPeople className="text-xl" />
             Team
           </Link>
+          <Link
+            href="/movienote"
+            className="hover:text-gray-100 inline-flex items-center gap-2 text-base"
+          >
+            <IoPeople className="text-xl" />
+            movienote
+          </Link>
         </div>
         <p className="text-sm text-gray-300">
           © {new Date().getFullYear()} Movie Note. All rights reserved.

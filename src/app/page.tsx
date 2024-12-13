@@ -183,7 +183,6 @@ export default async function Home() {
                   alt="Movie Recommender Mascot"
                   width={300}
                   height={400}
-                  className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </div>

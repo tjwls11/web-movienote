@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { FaHistory, FaHeart, FaComment, FaCamera } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 
 interface UserData {
   image: string
@@ -149,9 +150,11 @@ export default function MyPage() {
           <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
             <h3 className="text-lg font-bold mb-4">내 활동</h3>
             <div className="space-y-3">
-              <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
-                나의 영화 기록장
-              </button>
+              <Link href="/memo">
+                <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
+                  나의 영화 기록장
+                </button>
+              </Link>
               <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
                 나의 커뮤니티 기록
               </button>
