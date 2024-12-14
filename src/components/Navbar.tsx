@@ -35,7 +35,7 @@ export default function Navbar() {
   return (
     <div className="bg-white shadow-sm">
       <nav className="max-w-7xl mx-auto py-4 px-8 flex items-center justify-between">
-        <div className="text-[#2d5a27] font-mono text-2xl font-bold hover:text-[#1a3517] transition-colors">
+        <div className="text-[#2d5a27aa] font-mono text-2xl font-bold hover:text-[#1a3517] transition-colors">
           <Link href="/">MOVIENOTE</Link>
         </div>
 

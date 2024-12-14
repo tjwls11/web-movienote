@@ -8,6 +8,7 @@ import BoardSidebar from '@/components/BoardSidebar'
 export default function AddPostPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [category, setCategory] = useState('')
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -30,12 +31,7 @@ export default function AddPostPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title,
-          content,
-          author: session.user.name,
-          category: '한국영화',
-        }),
+        body: JSON.stringify({ title, content, author: session.user.name }),
       })
 
       const responseData = await res.json() // 응답 데이터 확인
@@ -75,6 +71,19 @@ export default function AddPostPage() {
               value={content}
               required
             />
+            <select
+              className="border border-slate-500 p-4"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            >
+              <option value="" disabled>
+                카테고리 선택
+              </option>
+              <option value="category1">카테고리 1</option>
+              <option value="category2">카테고리 2</option>
+              <option value="category3">카테고리 3</option>
+            </select>
             <div className="flex justify-end gap-4">
               <button
                 type="button"

@@ -148,7 +148,7 @@ export default async function Home() {
                 오늘의 추천 영화
               </h1>
               <div className="space-y-2">
-                <h2 className="text-3xl font-medium bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+                <h2 className="text-3xl font-medium bg-gradient-to-r text-[#2d5a27aa] bg-clip-text">
                   {randomMovie.title}
                 </h2>
                 <p className="text-gray-500 text-sm">{formattedDate} 개봉</p>
@@ -196,7 +196,7 @@ export default async function Home() {
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 다른 영화 정보 사이트
               </h3>
-              <div className="w-20 h-1 bg-emerald-500 rounded-full mb-12"></div>
+              <div className="w-20 h-1 bg-[#2d5a27aa] rounded-full mb-12"></div>
               <SiteSlider />
             </div>
           </div>

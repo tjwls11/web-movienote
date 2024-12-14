@@ -14,13 +14,20 @@ interface UserData {
   createdAt?: string
 }
 
+interface Movie {
+  id: number
+  title: string
+  poster_path: string
+}
+
 export default function MyPage() {
-  const { data: session, status, update } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentImage, setCurrentImage] = useState('/default-avatar.png')
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [recentMovies, setRecentMovies] = useState<Movie[]>([]) // 최근 본 영화 상태 추가
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -50,6 +57,26 @@ export default function MyPage() {
     fetchUserInfo()
   }, [session])
 
+  // 최근 본 영화 데이터 가져오기
+  useEffect(() => {
+    const recentMovies = JSON.parse(
+      sessionStorage.getItem('recentMovies') || '[]'
+    )
+    console.log('Recent Movies:', recentMovies)
+    if (recentMovies.length > 0) {
+      setRecentMovies(recentMovies.slice(-5))
+    }
+  }, [session])
+
+  // 추가: 최근 본 영화 업데이트 함수
+  const updateRecentMovies = (newMovie: Movie) => {
+    setRecentMovies((prevMovies) => {
+      const updatedMovies = [...prevMovies, newMovie].slice(-5) // 최신 5개 유지
+      sessionStorage.setItem('recentMovies', JSON.stringify(updatedMovies)) // 세션 스토리지 업데이트
+      return updatedMovies
+    })
+  }
+
   const handleImageClick = () => {
     fileInputRef.current?.click()
   }
@@ -72,12 +99,24 @@ export default function MyPage() {
 
         if (data.success) {
           setCurrentImage(data.user.image)
-          await update({ image: data.user.image })
         }
       } catch (error) {
         console.error('Error uploading image:', error)
         alert('이미지 업로드에 실패했습니다.')
       }
+    }
+  }
+
+  // 예화 클릭 시 포스터 가져오기
+  const handleMovieClick = (title: string) => {
+    const moviePoster = recentMovies.find(
+      (movie) => movie.title === title
+    )?.poster_path
+    if (moviePoster) {
+      // 포스터를 가져오는 로직 추가
+      console.log(`포스터 경로: https://image.tmdb.org/t/p/w500${moviePoster}`)
+    } else {
+      console.log('영화를 찾을 수 없습니다.')
     }
   }
 
@@ -90,7 +129,7 @@ export default function MyPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* 왼쪽 사이드바: 프로필 섹션 */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-lg p-6 top-24">
+          <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex flex-col items-center text-center">
               <div className="relative">
                 <Image
@@ -171,9 +210,33 @@ export default function MyPage() {
                 <FaHistory className="text-[#2d5a27]" /> 최근에 본 영화
               </h3>
               {/* 최근 본 영화 리스트 */}
-              <div className="text-gray-500 text-center py-4">
-                최근에 본 영화가 없습니다.
-              </div>
+              {recentMovies.length > 0 ? (
+                <div className="flex overflow-x-auto gap-4">
+                  {recentMovies.map((movie, index) => (
+                    <div
+                      key={`${movie.id}-${index}`}
+                      className="flex-shrink-0 w-1/5"
+                      onClick={() => handleMovieClick(movie.title)}
+                    >
+                      <Image
+                        src={
+                          movie.poster_path
+                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                            : '/default-movie.png'
+                        }
+                        alt={movie.title ? movie.title : '영화 포스터'}
+                        width={500}
+                        height={750}
+                        className="w-full h-auto"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-center py-4">
+                  최근에 본 영화가 없습니다.
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6">

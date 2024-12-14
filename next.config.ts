@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -16,6 +17,7 @@ const nextConfig = {
         pathname: '/t/p/w500/**', // 필요한 경로 패턴
       },
     ],
+    domains: ['image.tmdb.org'], // TMDB 이미지 호스트 추가
   },
 }
 
