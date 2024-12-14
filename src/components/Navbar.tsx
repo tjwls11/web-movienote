@@ -46,7 +46,7 @@ export default function Navbar() {
                 <Link href="/movie" className="text-green-800 font-bold">
                   movie
                 </Link>
-                <Link href="/movie" className="text-green-800 font-bold">
+                <Link href="/board" className="text-green-800 font-bold">
                   community
                 </Link>
                 <Link href="/memo" className="text-green-800 font-bold">
@@ -75,7 +75,7 @@ export default function Navbar() {
               <Link href="/movie" className="text-green-800 font-bold">
                 movie
               </Link>
-              <Link href="/movie" className="text-green-800 font-bold">
+              <Link href="/board" className="text-green-800 font-bold">
                 community
               </Link>
               <Link href="/memo" className="text-green-800 font-bold">

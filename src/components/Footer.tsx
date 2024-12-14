@@ -4,7 +4,7 @@ import { IoPeople } from 'react-icons/io5'
 
 export default function Footer() {
   return (
-    <footer className="bg-[#2d5a27] text-white mt-5">
+    <footer className="bg-[#2d5a27aa] text-white mt-5">
       <div className="max-w-6xl mx-auto sm:px-3 lg:px-8 py-6 flex flex-col items-center justify-center">
         <div className="flex gap-6 mb-3">
           <a

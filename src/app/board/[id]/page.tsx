@@ -1,74 +1,65 @@
 'use client'
-
-import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 interface Post {
-  id: number
+  _id: string
   title: string
-  author: string
-  date: string
-  views: number
-  content: string
+  author: string // 작성자 이름
+  date: string // 작성일 추가
+  content: string // 본문 추가
 }
 
-// 더미 데이터
-const dummyPost: Post = {
-  id: 1,
-  title: '첫 번째 게시글입니다',
-  author: '홍길동',
-  date: '2024-03-20',
-  views: 0,
-  content: '첫 번째 게시글의 내용입니다. 반갑습니다.',
-}
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { data: session } = useSession() // 세션 정보 가져오기
+  const [post, setPost] = useState<Post | null>(null) // post 상태 추가
+  const [id, setId] = useState<string | null>(null) // id 상태 추가
 
-export default function PostDetail() {
-  const router = useRouter()
-  const post = dummyPost
+  useEffect(() => {
+    const fetchParams = async () => {
+      const resolvedParams = await params // params 언랩
+      setId(resolvedParams.id) // id 상태 업데이트
+    }
+
+    fetchParams()
+  }, [params])
+
+  useEffect(() => {
+    if (id) {
+      const fetchPost = async () => {
+        const response = await fetch(`/api/posts/${id}`) // API 호출
+        const data = await response.json()
+        setPost(data.post) // post 상태 업데이트
+      }
+
+      fetchPost()
+    }
+  }, [id]) // id가 변경될 때마다 호출
+
+  if (!post) {
+    return <div className="text-center">Loading...</div> // 로딩 중 표시
+  }
+
+  // 날짜 형식 변환
+  const formattedDate = new Date(post.date).toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   return (
-    <div className="container mx-auto px-4 py-24">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">{post.title}</h1>
-
-        <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <div className="text-gray-600">
-            <span>작성자: {post.author}</span>
-            <span className="mx-2">|</span>
-            <span>작성일: {post.date}</span>
-          </div>
-          <div className="text-gray-600">조회수: {post.views}</div>
-        </div>
-
-        <div className="text-gray-800 mb-6 min-h-[200px] whitespace-pre-wrap">
-          {post.content}
-        </div>
-
-        <div className="flex justify-end gap-4">
-          <button
-            onClick={() => router.push('/board')}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-          >
-            목록으로
-          </button>
-          <button
-            onClick={() => router.push(`/board/edit/${post.id}`)}
-            className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-          >
-            수정
-          </button>
-          <button
-            onClick={() => {
-              if (confirm('정말 삭제하시겠습니까?')) {
-                // 삭제 로직 구현
-                router.push('/board')
-              }
-            }}
-            className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
-          >
-            삭제
-          </button>
-        </div>
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg h-96 overflow-hidden">
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
+      <p className="text-sm text-gray-600 mb-2">
+        작성자: <span className="font-semibold">{post.author}</span>
+      </p>
+      <p className="text-sm text-gray-600 mb-4">
+        작성일: <span className="font-semibold">{formattedDate}</span>
+      </p>
+      <div className="text-gray-800 leading-relaxed h-48 overflow-y-auto">
+        {post.content}
       </div>
     </div>
   )
