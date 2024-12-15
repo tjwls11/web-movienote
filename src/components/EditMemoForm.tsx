@@ -1,68 +1,108 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
 
-interface EditMemoFormProps {
-  id: string
-  title: string
-  description: string
-}
-
-export default function EditMemoForm({
-  id,
-  title,
-  description,
-}: EditMemoFormProps) {
-  const [newTitle, setNewTitle] = useState(title)
-  const [newDescription, setNewDescription] = useState(description)
+export default function EditMemoForm({ id }: { id: string }) {
   const router = useRouter()
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const getMemo = async () => {
+      try {
+        const res = await fetch(`/api/memos/${id}`)
+        if (!res.ok) {
+          throw new Error('Failed to fetch memo')
+        }
+        
+        const data = await res.json()
+        if (data.memo) {  // memo 객체가 존재하는지 확인
+          setTitle(data.memo.title)
+          setDescription(data.memo.description)
+        }
+      } catch (error) {
+        console.error('Error fetching memo:', error)
+        alert('메모를 불러오는데 실패했습니다')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (id) {
+      getMemo()
+    }
+  }, [id])
+
+  if (loading) return <div>Loading...</div>
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     try {
       const res = await fetch(`/api/memos/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ newTitle, newDescription }),
+        body: JSON.stringify({
+          newTitle: title,
+          newDescription: description,
+        }),
       })
+
       if (!res.ok) {
         throw new Error('Failed to update memo')
       }
-      // 수정 완료 후 메모 목록 페이지로 리디렉션
-      router.push('/memo') // 메모 목록 페이지로 이동
+
+      router.push('/memo')
     } catch (error) {
-      console.log(error)
+      console.error('Error:', error)
     }
   }
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        className="border border-slate-500 p-4"
-        placeholder="Memo Title"
-        value={newTitle}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          setNewTitle(e.target.value)
-        }}
-      />
-      <textarea
-        className="border border-slate-500 p-4 h-32"
-        placeholder="Memo Description"
-        value={newDescription}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          setNewDescription(e.target.value)
-        }}
-      />
-      <button
-        className="bg-green-800 text-white font-bold px-6 py-3 w-fit rounded-md"
-        type="submit"
-      >
-        Update Memo
-      </button>
-    </form>
+    <div className="max-w-2xl mx-auto p-8">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            제목
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2
+              focus:border-green-500 focus:ring-green-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            내용
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={5}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2
+              focus:border-green-500 focus:ring-green-500"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-md
+            hover:bg-green-700 transition-colors"
+        >
+          기록장 수정
+        </button>
+      </form>
+    </div>
   )
 }

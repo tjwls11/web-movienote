@@ -1,26 +1,41 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import React from 'react'
 import { HiOutlineTrash } from 'react-icons/hi'
 
-export default function MemoRemoveBtn({ id }: { id: string }) {
-  const router = useRouter()
+interface MemoRemoveBtnProps {
+  id: string;
+  onDelete: () => void;
+}
 
-  async function removeMemo() {
-    const confirmed = confirm(`${id} - 이 기록장을 지울까요?`)
-    if (confirmed) {
-      const res = await fetch(`/api/memos?id=${id}`, {
+export default function MemoRemoveBtn({ id, onDelete }: MemoRemoveBtnProps) {
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/memos/${id}`, {
         method: 'DELETE',
       })
-      if (res.ok) {
-        router.refresh()
+
+      const data = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(data.message || '메모 삭제에 실패했습니다')
       }
+
+      if (data.success) {
+        onDelete()  // 삭제 성공 시 목록 새로고침
+      }
+    } catch (error) {
+      console.error('Delete error:', error)
+      alert('메모 삭제에 실패했습니다')
     }
   }
 
   return (
-    <button className="text-red-500" onClick={removeMemo}>
+    <button
+      onClick={handleDelete}
+      className="text-red-400 hover:text-red-600 transition-colors"
+      aria-label="메모 삭제"
+    >
       <HiOutlineTrash size={24} />
     </button>
   )
