@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function SignPage() {
   const [name, setName] = useState('')
@@ -12,6 +13,7 @@ export default function SignPage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const router = useRouter()
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value

@@ -1,10 +1,9 @@
-// src/components/Movie.tsx
-
 'use client'
 
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import Link from 'next/link'
+import { useSession } from 'next-auth/react' // next-auth에서 useSession 가져오기
+import { useRouter } from 'next/navigation'
 
 // Movie 컴포넌트에서 사용될 타입 정의
 interface Movie {
@@ -37,6 +36,10 @@ const genreTranslations: { [key: number]: string } = {
 }
 
 export default function Movie() {
+  const { data: session } = useSession() // 세션 정보 가져오기
+  const userId = session?.user?.id // 사용자 ID 가져오기
+  const router = useRouter() // Next.js의 useRouter 사용
+
   const [movies, setMovies] = useState<Movie[]>([]) // 타입 명시
   const [page, setPage] = useState<number>(1) // 페이지 타입 명시
   const [genre, setGenre] = useState<string>('all') // 장르 타입 명시
@@ -71,32 +74,63 @@ export default function Movie() {
 
   // 영화 카드 컴포넌트
   const MovieCard = ({ movie }: { movie: Movie }) => {
+    const handleMovieClick = async () => {
+      if (!userId) {
+        console.error('사용자 ID가 없��니다.')
+        return
+      }
+
+      try {
+        const saveResponse = await fetch(`/api/user/recent-movie`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user: session.user.name, // 사용자 이름
+            movieId: movie.id, // 영화 ID
+          }),
+        })
+
+        const saveData = await saveResponse.json()
+        if (saveResponse.ok) {
+          console.log('영화가 성공적으로 저장되었습니다.')
+          router.push(`/movie/${movie.id}`)
+        } else {
+          console.error('영화 저장 실패:', saveData.error || 'Unknown error')
+        }
+      } catch (error) {
+        console.error('영화 저장 중 오류 발생:', error)
+      }
+    }
+
     return (
-      <Link href={`/movie/${movie.id}`}>
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer">
-          <img
-            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} // 포스터 경로 확인
-            alt={movie.title}
-            className="w-full h-80 object-cover"
-          />
-          <div className="p-4">
-            <p className="text-gray-600 text-center">
-              Rating: {movie.vote_average}
-            </p>
-            <h3 className="text-xl font-semibold text-center">{movie.title}</h3>
-          </div>
+      <div
+        onClick={handleMovieClick}
+        className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer w-64"
+      >
+        <img
+          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+          alt={movie.title}
+          className="w-full h-72 object-cover"
+        />
+        <div className="p-4">
+          <p className="text-gray-600 text-center">
+            Rating: {movie.vote_average}
+          </p>
+          <h3 className="text-xl font-semibold text-center">{movie.title}</h3>
         </div>
-      </Link>
+      </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-left">영화 목록</h1>
+    <div className="container mx-auto px-20 py-20">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-left mb-6">영화 목록</h1>
         <div className="flex justify-start mt-4">
           <select
-            className="text-lg font-medium"
+            className="text-lg font-medium p-2 border rounded"
             onChange={(e) => handleGenreChange(e.target.value)}
           >
             {Object.entries(genreTranslations).map(([key, value]) => (
@@ -109,20 +143,20 @@ export default function Movie() {
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>
 
-      <div className="flex justify-center mt-8 space-x-4">
+      <div className="flex justify-center mt-12 space-x-4">
         {page > 1 && (
           <button
             onClick={() => {
               const newPage = page - 1
               setPage(newPage)
             }}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
           >
             이전
           </button>
@@ -133,7 +167,7 @@ export default function Movie() {
               const newPage = page + 1
               setPage(newPage)
             }}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
           >
             다음
           </button>

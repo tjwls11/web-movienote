@@ -19,6 +19,7 @@ export async function connectToDatabase() {
     }
     client = new MongoClient(process.env.MONGODB_URI)
     await client.connect()
+    console.log('MongoDB에 연결되었습니다')
   }
   return client.db('movienote') // 데이터베이스 이름으로 수정
 }

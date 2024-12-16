@@ -7,6 +7,10 @@ import { FaHistory, FaHeart, FaComment, FaCamera } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
+import ChangeName from '@/components/ChangeName'
+
+import Modal from '@/components/Modal'
+import Loading from '@/components/Loading'
 interface UserData {
   image: string
   name: string
@@ -28,6 +32,7 @@ export default function MyPage() {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [recentMovies, setRecentMovies] = useState<Movie[]>([]) // 최근 본 영화 상태 추가
+  const [isModalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -59,23 +64,39 @@ export default function MyPage() {
 
   // 최근 본 영화 데이터 가져오기
   useEffect(() => {
-    const recentMovies = JSON.parse(
-      sessionStorage.getItem('recentMovies') || '[]'
-    )
-    console.log('Recent Movies:', recentMovies)
-    if (recentMovies.length > 0) {
-      setRecentMovies(recentMovies.slice(-5))
+    const fetchRecentMovies = async () => {
+      try {
+        const userName = session?.user?.name // 사용자 이름 가져오기
+        if (!userName) {
+          console.error('사용자 이름이 없습니다.') // 사용자 이름이 없을 경우 에러 로그
+          return // 사용자 이름이 없으면 함수 종료
+        }
+        const response = await fetch(
+          `/api/user/recent-movie?user=${encodeURIComponent(userName)}`
+        ) // 쿼리 파라미터로 사용자 이름 전달
+        const data = await response.json()
+        const recentMovieIds = data.movies || []
+
+        // 최근 영화 ID로 영화 정보 가져오기
+        const recentMoviePromises = recentMovieIds.map(async (id: number) => {
+          const movieResponse = await fetch(
+            `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.NEXT_PUBLIC_MOVIE_API_KEY}&language=ko-KR`
+          )
+          return movieResponse.json()
+        })
+
+        const recentMoviesData = await Promise.all(recentMoviePromises)
+        setRecentMovies(recentMoviesData)
+      } catch (error) {
+        console.error('최근 영화 불러오기 실패:', error)
+      }
+    }
+
+    if (session?.user) {
+      // 세션이 있을 때만 최근 영화 목록 불러오기
+      fetchRecentMovies() // 최근 영화 목록 불러오기 호출
     }
   }, [session])
-
-  // 추가: 최근 본 영화 업데이트 함수
-  const updateRecentMovies = (newMovie: Movie) => {
-    setRecentMovies((prevMovies) => {
-      const updatedMovies = [...prevMovies, newMovie].slice(-5) // 최신 5개 유지
-      sessionStorage.setItem('recentMovies', JSON.stringify(updatedMovies)) // 세션 스토리지 업데이트
-      return updatedMovies
-    })
-  }
 
   const handleImageClick = () => {
     fileInputRef.current?.click()
@@ -107,21 +128,53 @@ export default function MyPage() {
     }
   }
 
-  // 예화 클릭 시 포스터 가져오기
   const handleMovieClick = (title: string) => {
     const moviePoster = recentMovies.find(
       (movie) => movie.title === title
     )?.poster_path
     if (moviePoster) {
-      // 포스터를 가져오는 로직 추가
       console.log(`포스터 경로: https://image.tmdb.org/t/p/w500${moviePoster}`)
     } else {
       console.log('영화를 찾을 수 없습니다.')
     }
   }
 
+  const handleNameChange = async (newName: string) => {
+    try {
+      const response = await fetch('/api/user/name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newName }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setUserData((prev: UserData | null) => ({
+          ...prev,
+          name: newName,
+          image: prev?.image || '',
+          email: prev?.email || '',
+          createdAt: prev?.createdAt || '',
+        }))
+        alert('이름이 변경되었습니다.')
+      } else {
+        alert(data.error || '이름 변경 실패')
+      }
+    } catch (error) {
+      console.error('Error changing name:', error)
+      alert('이름 변경 중 오류가 발생했습니다.')
+    }
+    setModalOpen(false)
+  }
+
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <Loading pageName="MyPage" />
+      </div>
+    )
   }
 
   return (
@@ -177,11 +230,11 @@ export default function MyPage() {
           <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
             <h3 className="text-lg font-bold mb-4">계정 관리</h3>
             <div className="space-y-3">
-              <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
+              <button
+                className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors"
+                onClick={() => setModalOpen(true)}
+              >
                 이름 변경
-              </button>
-              <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
-                비밀번호 변경
               </button>
             </div>
           </div>
@@ -215,7 +268,7 @@ export default function MyPage() {
                   {recentMovies.map((movie, index) => (
                     <div
                       key={`${movie.id}-${index}`}
-                      className="flex-shrink-0 w-1/5"
+                      className="flex-shrink-0 w-1/5 text-center" // 텍스트 중앙 정렬
                       onClick={() => handleMovieClick(movie.title)}
                     >
                       <Image
@@ -225,10 +278,14 @@ export default function MyPage() {
                             : '/default-movie.png'
                         }
                         alt={movie.title ? movie.title : '영화 포스터'}
-                        width={500}
-                        height={750}
-                        className="w-full h-auto"
+                        width={100}
+                        height={150}
+                        className="w-32 h-48 object-cover"
                       />
+                      <h4 className="mt-2 text-sm font-semibold">
+                        {movie.title}
+                      </h4>{' '}
+                      {/* 제목 추가 */}
                     </div>
                   ))}
                 </div>
@@ -261,6 +318,13 @@ export default function MyPage() {
           </div>
         </div>
       </div>
+      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
+        <ChangeName
+          currentName={userData?.name || ''}
+          onNameChange={handleNameChange}
+          onClose={() => setModalOpen(false)}
+        />
+      </Modal>
     </div>
   )
 }

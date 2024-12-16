@@ -15,3 +15,11 @@ const userSchema = new Schema<IUser>({
 const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema)
 
 export default User
+
+export interface CustomUser {
+  image: string
+  name: string
+  email: string
+  createdAt?: string
+  provider?: string
+}

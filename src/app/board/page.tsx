@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import BoardSidebar from '@/components/BoardSidebar'
+import Loading from '@/components/Loading'
 
 interface Post {
   _id: string
@@ -72,7 +73,11 @@ export default function Board() {
   }
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <Loading pageName="커뮤니티" />
+      </div>
+    )
   }
 
   return (

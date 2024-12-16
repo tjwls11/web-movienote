@@ -1,9 +1,8 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/libs/mongodb'
-import { ObjectId } from 'mongodb'
 
-// GET 요청 처리
+// 프로필조회 요청 처리
 export async function GET() {
   try {
     const session = await auth()
@@ -53,7 +52,7 @@ export async function GET() {
   }
 }
 
-// POST 요청 처리
+// 프로필 업데이트 요청 처리
 export async function POST(req: Request) {
   try {
     const session = await auth()
@@ -134,7 +133,7 @@ export async function POST(req: Request) {
   }
 }
 
-// PUT 요청 처리
+// 프로필 복원 요청 처리
 export async function PUT() {
   try {
     const session = await auth()

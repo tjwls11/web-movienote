@@ -28,7 +28,7 @@ declare module 'next-auth' {
   }
 }
 
-const handler = NextAuth({
+export const authOptions = {
   secret: process.env.AUTH_SECRET,
   providers: [
     CredentialsProvider({
@@ -79,6 +79,11 @@ const handler = NextAuth({
       clientSecret: process.env.AUTH_GITHUB_SECRET || '',
     }),
   ],
+  // 추가 옵션...
+}
+
+const handler = NextAuth({
+  ...authOptions,
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === 'google' || account?.provider === 'github') {

@@ -3,8 +3,8 @@
 import SigninButton from '@/components/SigninButton'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
-import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useSession, signIn } from 'next-auth/react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -41,7 +41,6 @@ export default function LoginPage() {
         router.push('/')
       }
     } catch (error: unknown) {
-      // 'any' 대신 'unknown'을 사용하여 타입 안전성 향상
       console.error('로그인 에러:', error)
       setError('로그인 중 오류가 발생했습니다.')
     }

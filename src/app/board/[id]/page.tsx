@@ -1,6 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import Loading from '@/components/Loading'
 
 interface Post {
   _id: string
@@ -37,7 +38,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   }, [id]) // id가 변경될 때마다 호출
 
   if (!post) {
-    return <div className="text-center">Loading...</div> // 로딩 중 표시
+    return (
+      <div>
+        <Loading pageName="게시물" />
+      </div>
+    ) // 로딩 중 표시
   }
 
   // 날짜 형식 변환
