@@ -58,4 +58,8 @@ export default async function MoviePage({
       </div>
     </div>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 8b58a51f450a16dbb4e61ab94f14dbfd431baa47

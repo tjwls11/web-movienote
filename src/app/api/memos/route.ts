@@ -36,7 +36,7 @@ export async function GET() {
     console.error('Error in GET /api/memos:', error)
     return NextResponse.json({
       success: false,
-      message: 'Failed to fetch memos',
+      message: '메모를 불러오는데 실패했습니다',
       memos: []
     }, { status: 500 })
   }

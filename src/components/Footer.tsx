@@ -1,22 +1,35 @@
-import React from 'react'
-import { HiPencilAlt } from 'react-icons/hi'
-import MemoRemoveBtn from '@/components/MemoRemoveBtn'
 import Link from 'next/link'
+import { IoPeople } from 'react-icons/io5'
+import { FaGithub } from 'react-icons/fa'
 
-export default function MemoList() {
+export default function Footer() {
   return (
-    <>
-      <div className="p-8 border border-slate-300 my-8 flex justify-between gap-3 items-start rounded-lg">
-        <div>
-          <h1 className="text-3xl font-bold">기록장 제목</h1>
-        </div>
-        <div className="flex gap-2">
-          <MemoRemoveBtn />
-          <Link href={'/editMemo/123'}>
-            <HiPencilAlt size={24} />
-          </Link>
+    <footer className="bg-white border-t">
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-gray-500">
+            © 2024 MovieNote. All rights reserved.
+          </div>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/team"
+              className="text-gray-500 hover:text-gray-700 flex items-center gap-2"
+            >
+              <IoPeople className="text-xl" />
+              Team
+            </Link>
+            <Link
+              href="https://github.com/your-repo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-gray-700 flex items-center gap-2"
+            >
+              <FaGithub className="text-xl" />
+              GitHub
+            </Link>
+          </div>
         </div>
       </div>
-    </>
+    </footer>
   )
 }

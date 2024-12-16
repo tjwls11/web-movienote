@@ -23,4 +23,8 @@ const PostSchema = new mongoose.Schema({
   },
 })
 
+<<<<<<< HEAD
 export default mongoose.models.Post || mongoose.model('Post', PostSchema)
+=======
+export default mongoose.models.Post || mongoose.model('Post', PostSchema)
+>>>>>>> 8b58a51f450a16dbb4e61ab94f14dbfd431baa47
