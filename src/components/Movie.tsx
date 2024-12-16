@@ -95,9 +95,11 @@ export default function Movie() {
         const saveData = await saveResponse.json()
         if (saveResponse.ok) {
           console.log('영화가 성공적으로 저장되었습니다.')
+          // 영화 저장 후 상세 페이지로 이동
           router.push(`/movie/${movie.id}`)
         } else {
-          console.error('영화 저장 실패:', saveData.error || 'Unknown error')
+          console.error('영화 저장 실패:', saveData.message || 'Unknown error')
+          console.error('Response:', saveData) // Log the response for debugging
         }
       } catch (error) {
         console.error('영화 저장 중 오류 발생:', error)
@@ -107,18 +109,22 @@ export default function Movie() {
     return (
       <div
         onClick={handleMovieClick}
-        className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer w-64"
+        className="bg-white rounded-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer w-64 m-4 flex flex-col items-center border border-gray-300"
       >
         <img
           src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
           alt={movie.title}
-          className="w-full h-72 object-cover"
+          width={100}
+          height={150}
+          className="w-32 h-48 object-cover mt-5"
         />
-        <div className="p-4">
+        <div className="p-4 h-full flex flex-col justify-between items-center">
           <p className="text-gray-600 text-center">
-            Rating: {movie.vote_average}
+            평점: {movie.vote_average}
           </p>
-          <h3 className="text-xl font-semibold text-center">{movie.title}</h3>
+          <h3 className="text-xl font-semibold text-center text-black mt-2">
+            {movie.title}
+          </h3>
         </div>
       </div>
     )
@@ -143,7 +149,7 @@ export default function Movie() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
