@@ -1,15 +1,13 @@
 import mongoose, { Schema } from 'mongoose'
 
-const memoSchema = new Schema(
+const memoScjema = new Schema(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    isStarred: { type: Boolean, default: false },
-    folderId: { type: String, default: '전체' },
+    email: { type: String, required: true },
   },
-  { timestamps: true } // createdAt, updatedAt 자동 추가
+  {
+    timestamps: true,
+  }
 )
-
-const Memo = mongoose.models.Memo || mongoose.model('Memo', memoSchema)
+const Memo = mongoose.models.Log || mongoose.model('Memo', memoScjema)
 
 export default Memo

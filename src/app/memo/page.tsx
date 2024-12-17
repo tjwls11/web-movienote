@@ -1,19 +1,12 @@
-import MemoList from '@/components/MemoList'
 import React from 'react'
-
-import { FiFilm } from 'react-icons/fi'
+import MemoList from '@/components/MemoList'
 
 export default function MemoPage() {
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-center space-x-3 mb-8">
-          <FiFilm className="w-8 h-8 text-green-600" />
-          <h1 className="text-4xl font-bold text-green-600">영화 기록장</h1>
-        </div>
-
-        <MemoList />
-      </div>
+    <div>
+      <h1 className="text-4xl font-bold text-green-800 mb-8">영화 기록장</h1>
+      <MemoList />
+      <MemoList />
     </div>
   )
 }

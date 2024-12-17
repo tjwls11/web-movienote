@@ -10,7 +10,7 @@ export default function SigninButton() {
         className="flex items-center justify-center gap-4 rounded-lg pl-3 mb-4 w-full"
       >
         <Image src="/google-logo.png" height={30} width={30} alt="google" />
-        <span className="bg-[#2d5a27aa] text-white px-4 py-3 rounded-lg">
+        <span className="bg-green-800 text-white px-4 py-3 rounded-lg">
           Sign in with Google
         </span>
       </button>
@@ -21,7 +21,7 @@ export default function SigninButton() {
         className="flex items-center justify-center gap-4 rounded-lg pl-3 mb-4 w-full"
       >
         <Image src="/github-logo.png" height={30} width={30} alt="github" />
-        <span className="bg-[#2d5a27aa] text-white px-4 py-3 rounded-lg">
+        <span className="bg-green-800 text-white px-4 py-3 rounded-lg">
           Sign in with Github
         </span>
       </button>

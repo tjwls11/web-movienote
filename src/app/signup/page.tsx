@@ -157,7 +157,7 @@ export default function SignPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-[#2d5a27aa] text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full bg-green-700 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
           >
             회원가입
           </button>

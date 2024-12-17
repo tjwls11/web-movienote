@@ -8,9 +8,9 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 import ChangeName from '@/components/ChangeName'
+
 import Modal from '@/components/Modal'
 import Loading from '@/components/Loading'
-
 interface UserData {
   image: string
   name: string
@@ -32,7 +32,6 @@ export default function MyPage() {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [recentMovies, setRecentMovies] = useState<Movie[]>([]) // 최근 본 영화 상태 추가
-  const [favoriteMovies, setFavoriteMovies] = useState<Movie[]>([]) // 찜한 영화 상태 추가
   const [isModalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
@@ -73,8 +72,8 @@ export default function MyPage() {
           return // 사용자 이름이 없으면 함수 종료
         }
         const response = await fetch(
-          `/api/user/recent-movie?user=${encodeURIComponent(userName)}` // 쿼리 파라미터로 사용자 이름 전달
-        )
+          `/api/user/recent-movie?user=${encodeURIComponent(userName)}`
+        ) // 쿼리 파라미터로 사용자 이름 전달
         const data = await response.json()
         const recentMovieIds = data.movies || []
 
@@ -96,43 +95,6 @@ export default function MyPage() {
     if (session?.user) {
       // 세션이 있을 때만 최근 영화 목록 불러오기
       fetchRecentMovies() // 최근 영화 목록 불러오기 호출
-    }
-  }, [session])
-
-  // 찜한 영화 데이터 가져오기
-  useEffect(() => {
-    const fetchFavoriteMovies = async () => {
-      try {
-        const userName = session?.user?.name
-        if (!userName) {
-          console.error('사용자 이름이 없습니다.')
-          return
-        }
-        const response = await fetch(
-          `/api/user/favorites?user=${encodeURIComponent(userName)}`
-        )
-        const data = await response.json()
-        const favoriteMovieIds = data.movies || []
-
-        // 찜한 영화 ID로 영화 정보 가져오기
-        const favoriteMoviePromises = favoriteMovieIds.map(
-          async (id: number) => {
-            const movieResponse = await fetch(
-              `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.NEXT_PUBLIC_MOVIE_API_KEY}&language=ko-KR`
-            )
-            return movieResponse.json()
-          }
-        )
-
-        const favoriteMoviesData = await Promise.all(favoriteMoviePromises)
-        setFavoriteMovies(favoriteMoviesData)
-      } catch (error) {
-        console.error('찜한 영화 불러오기 실패:', error)
-      }
-    }
-
-    if (session?.user) {
-      fetchFavoriteMovies()
     }
   }, [session])
 
@@ -288,9 +250,6 @@ export default function MyPage() {
               <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
                 나의 커뮤니티 기록
               </button>
-              <button className="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-lg transition-colors">
-                내 리뷰
-              </button>
             </div>
           </div>
         </div>
@@ -325,7 +284,8 @@ export default function MyPage() {
                       />
                       <h4 className="mt-2 text-sm font-semibold">
                         {movie.title}
-                      </h4>
+                      </h4>{' '}
+                      {/* 제목 추가 */}
                     </div>
                   ))}
                 </div>
@@ -338,38 +298,22 @@ export default function MyPage() {
 
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="flex items-center gap-2 text-xl font-bold mb-4">
-                <FaHeart className="text-[#2d5a27]" /> 찜한 영화
+                <FaHeart className="text-[#2d5a27]" /> 관심있는 영화
               </h3>
-              {/* 찜한 영화 리스트 */}
-              {favoriteMovies.length > 0 ? (
-                <div className="flex overflow-x-auto gap-4">
-                  {favoriteMovies.map((movie, index) => (
-                    <div
-                      key={`${movie.id}-${index}`}
-                      className="flex-shrink-0 w-1/5 text-center"
-                    >
-                      <Image
-                        src={
-                          movie.poster_path
-                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                            : '/default-movie.png'
-                        }
-                        alt={movie.title ? movie.title : '영화 포스터'}
-                        width={100}
-                        height={150}
-                        className="w-32 h-48 object-cover"
-                      />
-                      <h4 className="mt-2 text-sm font-semibold">
-                        {movie.title}
-                      </h4>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-gray-500 text-center py-4">
-                  찜한 영화가 없습니다.
-                </div>
-              )}
+              {/* 좋아요한 영화 리스트 */}
+              <div className="text-gray-500 text-center py-4">
+                관심 표시한 영화가 없습니다.
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="flex items-center gap-2 text-xl font-bold mb-4">
+                <FaComment className="text-[#2d5a27]" /> 내 리뷰
+              </h3>
+              {/* 리뷰 리스트 */}
+              <div className="text-gray-500 text-center py-4">
+                작성한 리뷰가 없습니다.
+              </div>
             </div>
           </div>
         </div>

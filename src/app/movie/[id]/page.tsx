@@ -29,7 +29,7 @@ export default async function MoviePage({
     console.error('Failed to fetch movie:', response.statusText)
     return (
       <div className="text-center mt-20 text-gray-600">
-        영화를 불러올 수 없습니다. 다시 시도해ㅋ주세요.
+        영화를 불러올 수 없습니다. 다시 시도해주세요.
       </div>
     )
   }
