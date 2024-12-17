@@ -1,44 +1,62 @@
 import connectMongoDB from '@/libs/mongodb'
 import Memo from '@/models/memo'
 import { NextRequest, NextResponse } from 'next/server'
-export async function POST(request: NextRequest) {
+
+export async function POST(request: Request) {
   try {
-    const { title, description } = await request.json()
-    if (!title || !description) {
+    await connectMongoDB()
+
+    // 요청 데이터 로깅
+    const requestData = await request.json()
+    console.log('Received data:', requestData)
+
+    const { title, content, author } = requestData
+
+    // 필드 값 로깅
+    console.log('Extracted fields:', { title, content, author })
+
+    if (!title || !content || !author) {
       return NextResponse.json(
-        { message: 'Title and description are required' },
+        { message: '제목, 내용, 작성자는 필수 항목입니다.' },
         { status: 400 }
       )
     }
-    await connectMongoDB()
-    await Memo.create({ title, description })
-    return NextResponse.json({ message: 'Memo created' }, { status: 201 })
+
+    const newMemo = await Memo.create({
+      title,
+      content,
+      author,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    // 생성된 메모 로깅
+    console.log('Created memo:', newMemo)
+
+    return NextResponse.json(
+      { message: 'Memo created successfully', memo: newMemo },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Error in POST /api/memos:', error)
     return NextResponse.json(
-      { message: 'Internal Server Error' },
+      { message: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await connectMongoDB()
-    const memos = await Memo.find().sort({ createdAt: -1 })
 
-    return NextResponse.json({
-      success: true,
-      memos: memos,
-    })
+    const memos = await Memo.find({}).sort({ createdAt: -1 })
+
+    return NextResponse.json({ success: true, memos })
   } catch (error) {
     console.error('Error in GET /api/memos:', error)
     return NextResponse.json(
-      {
-        success: false,
-        message: '메모를 불러오는데 실패했습니다',
-        memos: [],
-      },
+      { success: false, message: 'Failed to fetch memos' },
       { status: 500 }
     )
   }
