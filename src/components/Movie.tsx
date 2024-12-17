@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { useSession } from 'next-auth/react' // next-auth에서 useSession 가져오기
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 // Movie 컴포넌트에서 사용될 타입 정의
@@ -36,35 +36,49 @@ const genreTranslations: { [key: number]: string } = {
 }
 
 export default function Movie() {
-  const { data: session } = useSession() // 세션 정보 가져오기
-  const userId = session?.user?.id // 사용자 ID 가져오기
-  const router = useRouter() // Next.js의 useRouter 사용
+  const { data: session } = useSession()
+  const userId = session?.user?.id
+  const router = useRouter()
 
-  const [movies, setMovies] = useState<Movie[]>([]) // 타입 명시
-  const [page, setPage] = useState<number>(1) // 페이지 타입 명시
-  const [genre, setGenre] = useState<string>('all') // 장르 타입 명시
+  const [allMovies, setAllMovies] = useState<Movie[]>([]) // 전체 영화 상태 추가
+  const [movies, setMovies] = useState<Movie[]>([]) // 현재 페이지에 표시할 영화 상태
+  const [page, setPage] = useState<number>(1)
+  const [genre, setGenre] = useState<string>('all')
   const [totalPages, setTotalPages] = useState<number>(0)
+  const [searchQuery, setSearchQuery] = useState<string>('') // 검색 쿼리 상태 추가
 
   const apiKey = process.env.NEXT_PUBLIC_MOVIE_API_KEY
 
   // 영화 목록 불러오기
-  const fetchMovies = async (newPage: number, newGenre: string) => {
+  const fetchMovies = async (
+    newPage: number,
+    newGenre: string,
+    query: string
+  ) => {
     try {
-      const genreFilter = newGenre !== 'all' ? `&with_genres=${newGenre}` : ''
-      const response = await axios.get(
-        `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${newPage}&sort_by=popularity.desc&adult=false${genreFilter}&region=KR&language=ko-KR`
-      )
-      setMovies(response.data.results)
+      let url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${newPage}&sort_by=popularity.desc&adult=false&region=KR&language=ko-KR`
+
+      if (newGenre !== 'all') {
+        url += `&with_genres=${newGenre}`
+      }
+
+      if (query) {
+        // 검색 쿼리가 있을 경우 search/movie 엔드포인트 사용
+        url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}&page=${newPage}&language=ko-KR`
+      }
+
+      const response = await axios.get(url)
+      setAllMovies(response.data.results) // 전체 영화 저장
       setTotalPages(response.data.total_pages)
     } catch (error) {
-      console.error('Failed to fetch movies:', error)
+      console.error('영화 목록을 불러오는 데 실패했습니다:', error)
     }
   }
 
   // 컴포넌트가 마운트될 때, 또는 페이지나 장르가 변경될 때 영화 목록을 불러옴
   useEffect(() => {
-    fetchMovies(page, genre)
-  }, [page, genre])
+    fetchMovies(page, genre, searchQuery)
+  }, [page, genre, searchQuery])
 
   // 장르 변경 시 드롭다운으로 변경
   const handleGenreChange = (newGenre: string) => {
@@ -75,11 +89,6 @@ export default function Movie() {
   // 영화 카드 컴포넌트
   const MovieCard = ({ movie }: { movie: Movie }) => {
     const handleMovieClick = async () => {
-      if (!userId) {
-        console.error('사용자 ID가 없��니다.')
-        return
-      }
-
       try {
         const saveResponse = await fetch(`/api/user/recent-movie`, {
           method: 'POST',
@@ -87,19 +96,17 @@ export default function Movie() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            user: session.user.name, // 사용자 이름
-            movieId: movie.id, // 영화 ID
+            user: session?.user?.name || 'Anonymous',
+            movieId: movie.id,
           }),
         })
 
         const saveData = await saveResponse.json()
         if (saveResponse.ok) {
           console.log('영화가 성공적으로 저장되었습니다.')
-          // 영화 저장 후 상세 페이지로 이동
           router.push(`/movie/${movie.id}`)
         } else {
           console.error('영화 저장 실패:', saveData.message || 'Unknown error')
-          console.error('Response:', saveData) // Log the response for debugging
         }
       } catch (error) {
         console.error('영화 저장 중 오류 발생:', error)
@@ -114,8 +121,6 @@ export default function Movie() {
         <img
           src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
           alt={movie.title}
-          width={100}
-          height={150}
           className="w-32 h-48 object-cover mt-5"
         />
         <div className="p-4 h-full flex flex-col justify-between items-center">
@@ -131,13 +136,19 @@ export default function Movie() {
   }
 
   return (
-    <div className="container mx-auto px-20 py-20">
-      <div className="mb-12">
+    <div className="container mx-auto px-4 md:px-20 py-10">
+      <div className="mb-12 flex justify-between items-center">
         <h1 className="text-4xl font-bold text-left mb-6">영화 목록</h1>
-        <div className="flex justify-start mt-4">
+        <div className="flex">
+          <input
+            type="text"
+            placeholder="제목으로 검색"
+            className="text-lg font-medium p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            onChange={(e) => setSearchQuery(e.target.value)} // 검색 쿼리 업데이트
+          />
           <select
-            className="text-lg font-medium p-2 border rounded"
-            onChange={(e) => handleGenreChange(e.target.value)}
+            className="text-lg font-medium p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 ml-4"
+            onChange={(e) => handleGenreChange(e.target.value)} // 장르 변경
           >
             {Object.entries(genreTranslations).map(([key, value]) => (
               <option key={key} value={key}>
@@ -150,7 +161,7 @@ export default function Movie() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {movies.map((movie) => (
+        {allMovies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>
@@ -158,22 +169,16 @@ export default function Movie() {
       <div className="flex justify-center mt-12 space-x-4">
         {page > 1 && (
           <button
-            onClick={() => {
-              const newPage = page - 1
-              setPage(newPage)
-            }}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            onClick={() => setPage(page - 1)}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
           >
             이전
           </button>
         )}
         {page < totalPages && (
           <button
-            onClick={() => {
-              const newPage = page + 1
-              setPage(newPage)
-            }}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            onClick={() => setPage(page + 1)}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
           >
             다음
           </button>

@@ -64,7 +64,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="bg-[#2d5a27] hover:bg-[#1a3517] text-white px-6 py-2 rounded-md text-lg font-medium transition-colors"
+                  className="bg-[#2d5a27aa] hover:bg-[#1a3517] text-white px-6 py-2 rounded-md text-lg font-medium transition-colors"
                 >
                   Logout
                 </button>
@@ -83,7 +83,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/login"
-                className="bg-[#2d5a27] hover:bg-[#1a3517] text-white px-6 py-2 rounded-md text-lg font-medium transition-colors"
+                className="bg-[#2d5a27aa] hover:bg-[#1a3517] text-white px-6 py-2 rounded-md text-lg font-medium transition-colors"
               >
                 Login
               </Link>

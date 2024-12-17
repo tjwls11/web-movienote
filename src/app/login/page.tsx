@@ -5,12 +5,13 @@ import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession, signIn } from 'next-auth/react'
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [showPassword, setShowPassword] = useState(false) // 비밀번호 가시성 상태 추가
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const { status } = useSession()
 
@@ -36,7 +37,11 @@ export default function LoginPage() {
       console.log('로그인 결과:', result)
 
       if (result?.error) {
-        setError(result.error)
+        if (result.error === 'Configuration') {
+          setError('비밀번호가 ��바르지 않습니다.')
+        } else {
+          setError(result.error)
+        }
       } else if (result?.ok) {
         router.push('/')
       }
@@ -91,7 +96,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword((prev) => !prev)} // 버튼 클릭 시 가시성 토글
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
-                {showPassword ? '숨기기' : '보이기'}
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
           </div>
@@ -100,7 +105,7 @@ export default function LoginPage() {
           )}
           <button
             type="submit"
-            className="w-full bg-green-700 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full bg-[#2d5a27aa] text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
           >
             로그인
           </button>
@@ -113,12 +118,11 @@ export default function LoginPage() {
 
         <div className="relative w-full my-4">
           <hr className="border-gray-300" />
-          <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-gray-500">
-            또는
-          </span>
+
+          <hr className="border-gray-300" />
         </div>
 
-        <div className="justify-center">
+        <div className="justify-center items-center pt-4 mr-4">
           <SigninButton />
         </div>
       </div>
