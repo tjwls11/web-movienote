@@ -15,11 +15,18 @@ interface Comment {
   date: string
 }
 
-export default function PostPage() {
-  const params = useParams()
+type Props = {
+  params: { id: string }
+}
+
+export default async function PostPage({ params }: Props) {
   const { data: session } = useSession()
   const [initialComments, setInitialComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  if (!params || !params.id) {
+    return <div>Invalid post ID</div>
+  }
 
   useEffect(() => {
     const fetchComments = async () => {
