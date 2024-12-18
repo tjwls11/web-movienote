@@ -1,70 +1,123 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import Loading from '@/components/Loading'
+import Sidebar from '@/components/Sidebar'
 
 interface Post {
   _id: string
   title: string
-  author: string // 작성자 이름
-  date: string // 작성일 추가
-  content: string // 본문 추가
+  content: string
+  author: string
+  date: string
+  categoryId: number
+  categoryName: string
 }
 
-export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { data: session } = useSession() // 세션 정보 가져오기
-  const [post, setPost] = useState<Post | null>(null) // post 상태 추가
-  const [id, setId] = useState<string | null>(null) // id 상태 추가
+type CategoryId = 1 | 2 | 3 | 4
+const CATEGORIES: Record<CategoryId, string> = {
+  1: '영화토론',
+  2: '영화수다',
+  3: '후기/리뷰',
+  4: '스포',
+}
+
+export default function CategoryBoard() {
+  const params = useParams()
+  const [posts, setPosts] = useState<Post[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { data: session } = useSession()
 
   useEffect(() => {
-    const fetchParams = async () => {
-      const resolvedParams = await params // params 언랩
-      setId(resolvedParams.id) // id 상태 업데이트
-    }
+    const fetchPosts = async () => {
+      const categoryId = params?.id
 
-    fetchParams()
-  }, [params])
-
-  useEffect(() => {
-    if (id) {
-      const fetchPost = async () => {
-        const response = await fetch(`/api/posts/${id}`) // API 호출
-        const data = await response.json()
-        setPost(data.post) // post 상태 업데이트
+      if (!categoryId) {
+        console.error('카테고리 ID가 유효하지 않습니다')
+        setIsLoading(false)
+        return
       }
 
-      fetchPost()
+      try {
+        const response = await fetch(`/api/posts/${categoryId}`)
+        if (!response.ok) {
+          throw new Error('게시글을 가져오는데 실패했습니다')
+        }
+        const data = await response.json()
+        setPosts(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('게시글 로딩 중 오류:', error)
+        setPosts([])
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [id]) // id가 변경될 때마다 호출
 
-  if (!post) {
+    fetchPosts()
+  }, [params?.id])
+
+  if (isLoading)
     return (
       <div>
-        <Loading pageName="게시물" />
+        <Loading pageName="게시글" />
       </div>
-    ) // 로딩 중 표시
-  }
-
-  // 날짜 형식 변환
-  const formattedDate = new Date(post.date).toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+    )
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg h-96 overflow-hidden">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
-      <p className="text-sm text-gray-600 mb-2">
-        작성자: <span className="font-semibold">{post.author}</span>
-      </p>
-      <p className="text-sm text-gray-600 mb-4">
-        작성일: <span className="font-semibold">{formattedDate}</span>
-      </p>
-      <div className="text-gray-800 leading-relaxed h-48 overflow-y-auto">
-        {post.content}
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar categoryId={Number(params?.id) as CategoryId} />
+
+      {/* 메인 컨텐츠 */}
+      <div className="flex-1 pl-4 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8 flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-[#2d5a27aa]">
+              {Number(params?.id)
+                ? CATEGORIES[Number(params?.id) as CategoryId]
+                : '전체글'}
+            </h1>
+            {session && (
+              <Link
+                href="/board/add"
+                className="bg-[#2d5a27aa] text-white px-6 py-3 rounded-lg 
+                         hover:bg-[#2d5a27] transition-colors duration-200 
+                         shadow-md"
+              >
+                글쓰기
+              </Link>
+            )}
+          </div>
+
+          <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+            {posts.map((post) => (
+              <Link href={`/board/post/${post._id}`} key={post._id}>
+                <div className="border-b p-6 hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {post.title}
+                    </h2>
+                    <span className="text-sm text-gray-500">
+                      {new Date(post.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="mr-4">작성자: {post.author}</span>
+                    <span>카테고리: {post.categoryName}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {posts.length === 0 && (
+            <div className="text-center p-8 bg-white rounded-lg shadow-sm mt-4 text-gray-500">
+              게시글이 없습니다.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

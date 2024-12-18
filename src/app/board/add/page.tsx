@@ -1,106 +1,113 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { redirect, useRouter } from 'next/navigation'
-import React, { useState } from 'react'
-import BoardSidebar from '@/components/BoardSidebar'
 
-export default function AddPostPage() {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [category, setCategory] = useState('')
+// 카테고리 타입 정의
+type CategoryId = 1 | 2 | 3 | 4
+
+const CATEGORY_MAP: Record<CategoryId, string> = {
+  1: '영화토론',
+  2: '영화수다',
+  3: '후기/리뷰',
+  4: '스포',
+} as const
+
+export default function AddPost() {
   const router = useRouter()
   const { data: session } = useSession()
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [categoryId, setCategoryId] = useState<CategoryId>(1)
 
-  // 세션이 없으면 로그인 페이지로 리디렉션
-  if (!session) {
-    redirect('/login')
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title || !content) {
-      alert('Title and content are required')
+    if (!session?.user?.email) {
+      alert('로그인이 필요합니다.')
       return
     }
 
     try {
-      const res = await fetch('/api/posts', {
+      const response = await fetch('/api/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, content, author: session.user.name }),
+        body: JSON.stringify({
+          title,
+          content,
+          author: session.user.name,
+          authorId: session.user.email,
+          date: new Date().toISOString(),
+          categoryId: Number(categoryId),
+          categoryName: CATEGORY_MAP[categoryId],
+        }),
       })
 
-      const responseData = await res.json() // 응답 데이터 확인
-      console.log('Response from POST:', responseData) // 응답 로그 추가
+      const data = await response.json()
 
-      if (res.ok) {
-        router.push('/board')
-        router.refresh()
+      if (response.ok) {
+        router.push(`/board/${categoryId}`)
       } else {
-        throw new Error('Failed to create a post')
+        throw new Error(data.message || 'Failed to create post')
       }
     } catch (error) {
-      console.log(error)
+      console.error('Error creating post:', error)
+      alert(
+        error instanceof Error ? error.message : '게시글 작성에 실패했습니다.'
+      )
     }
   }
 
   return (
-    <div className="flex">
-      <BoardSidebar />
-      <div className="container mx-auto px-4 py-24 flex-1">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">글쓰기</h1>
-
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+    <div className="container mx-auto px-4 py-24">
+      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold mb-6">새 글 작성</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">카테고리</label>
+            <select
+              value={categoryId}
+              onChange={(e) =>
+                setCategoryId(Number(e.target.value) as CategoryId)
+              }
+              className="w-full p-2 border rounded-md"
+            >
+              {Object.entries(CATEGORY_MAP).map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">제목</label>
             <input
               type="text"
-              className="border border-slate-500 p-4"
-              placeholder="게시글 제목"
-              onChange={(e) => setTitle(e.target.value)}
               value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-2 border rounded-md"
               required
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">내용</label>
             <textarea
-              className="border border-slate-500 p-4 h-64"
-              placeholder="게시글 내용"
-              onChange={(e) => setContent(e.target.value)}
               value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full p-2 border rounded-md min-h-[200px]"
               required
             />
-            <select
-              className="border border-slate-500 p-4"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              <option value="" disabled>
-                카테고리 선택
-              </option>
-              <option value="category1">카테고리 1</option>
-              <option value="category2">카테고리 2</option>
-              <option value="category3">카테고리 3</option>
-            </select>
-            <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => router.push('/board')}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                취소
-              </button>
-              <button
-                className="bg-blue-500 text-white font-bold px-6 py-3 w-fit rounded-md"
-                type="submit"
-              >
-                등록
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            작성하기
+          </button>
+        </form>
       </div>
     </div>
   )

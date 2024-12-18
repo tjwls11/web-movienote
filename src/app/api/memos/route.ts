@@ -1,4 +1,4 @@
-import connectMongoDB from '@/libs/mongodb'
+import { connectMongoDB } from '@/libs/mongodb'
 import Memo from '@/models/memo'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -6,22 +6,28 @@ export async function POST(request: Request) {
   try {
     await connectMongoDB()
 
-    // 요청 데이터 로깅
+    // 더 자세한 요청 데이터 로깅
     const requestData = await request.json()
-    console.log('Received data:', requestData)
+    console.log('받은 데이터 (전체):', JSON.stringify(requestData, null, 2))
 
     const { title, content, author } = requestData
 
-    // 필드 값 로깅
-    console.log('Extracted fields:', { title, content, author })
+    // 각 필드의 타입 확인
+    console.log('필드 타입:', {
+      title: typeof title,
+      content: typeof content,
+      author: typeof author,
+    })
 
     if (!title || !content || !author) {
+      console.log('필수 필드 누락:', { title, content, author })
       return NextResponse.json(
         { message: '제목, 내용, 작성자는 필수 항목입니다.' },
         { status: 400 }
       )
     }
 
+    console.log('Memo 생성 시도...')
     const newMemo = await Memo.create({
       title,
       content,
@@ -29,18 +35,25 @@ export async function POST(request: Request) {
       createdAt: new Date(),
       updatedAt: new Date(),
     })
-
-    // 생성된 메모 로깅
-    console.log('Created memo:', newMemo)
+    console.log('Memo 생성 성공:', newMemo)
 
     return NextResponse.json(
       { message: 'Memo created successfully', memo: newMemo },
       { status: 201 }
     )
-  } catch (error) {
-    console.error('Error in POST /api/memos:', error)
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('상세 에러 정보:', {
+        이름: error.name,
+        메시지: error.message,
+        스택: error.stack,
+      })
+    } else {
+      console.error('알 수 없는 에러:', error)
+    }
+
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: '서버 내부 오류가 발생했습니다' },
       { status: 500 }
     )
   }
@@ -50,13 +63,19 @@ export async function GET(request: NextRequest) {
   try {
     await connectMongoDB()
 
-    const memos = await Memo.find({}).sort({ createdAt: -1 })
+    // URL에서 사용자 정보 가져오기
+    const { searchParams } = new URL(request.url)
+    const author = searchParams.get('author')
 
-    return NextResponse.json({ success: true, memos })
+    // author가 있는 경우 해당 사용자의 메모만 조회
+    const memos = author
+      ? await Memo.find({ author }).sort({ createdAt: -1 })
+      : await Memo.find().sort({ createdAt: -1 })
+
+    return NextResponse.json({ memos })
   } catch (error) {
-    console.error('Error in GET /api/memos:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch memos' },
+      { error: 'Failed to fetch memos' },
       { status: 500 }
     )
   }

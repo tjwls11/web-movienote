@@ -1,165 +1,111 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import BoardSidebar from '@/components/BoardSidebar'
 import Loading from '@/components/Loading'
+import Sidebar from '@/components/Sidebar'
 
 interface Post {
   _id: string
   title: string
-  author: string // 작성자 추가
-  date: string // 작성일 추가
+  content: string
+  author: string
+  date: string
+  categoryId: number
+  categoryName: string
+}
+
+type CategoryId = 1 | 2 | 3 | 4
+const CATEGORIES: Record<CategoryId, string> = {
+  1: '영화토론',
+  2: '영화수다',
+  3: '후기/리뷰',
+  4: '스포',
 }
 
 export default function Board() {
-  const router = useRouter()
-  const { data: session } = useSession() // 세션 정보 가져오기
   const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const { data: session } = useSession()
 
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch('/api/posts')
-      if (!response.ok) {
-        const errorData = await response.json() // 오류 메시지 가져오기
-        throw new Error(
-          `게시글을 불러오는 데 실패했습니다: ${
-            errorData.error || '알 수 없는 오류'
-          }`
-        )
-      }
-      const data = await response.json()
-      console.log('Fetched posts:', data) // API 응답 로그 추가
-
-      setPosts(
-        data.map((post: any) => ({
-          _id: post._id,
-          title: post.title,
-          author: post.author,
-          date: post.date,
-        }))
-      )
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Error fetching posts:', error.message)
-      } else {
-        console.error('Unexpected error:', error)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
   useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/posts')
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts')
+        }
+        const data = await response.json()
+        setPosts(data)
+      } catch (error) {
+        console.error('Error fetching posts:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     fetchPosts()
   }, [])
 
-  const handleDelete = async (id: string) => {
-    if (confirm('정말 삭제하시겠습니까?')) {
-      try {
-        const response = await fetch(`/api/posts/${id}`, {
-          method: 'DELETE',
-        })
-        if (response.ok) {
-          setPosts(posts.filter((post) => post._id !== id)) // 삭제 후 상태 업데이트
-        } else {
-          throw new Error('Failed to delete the post')
-        }
-      } catch (error) {
-        console.error('Error deleting post:', error)
-      }
-    }
-  }
-
-  if (loading) {
+  if (isLoading)
     return (
       <div>
-        <Loading pageName="커뮤니티" />
+        <Loading pageName="게시글" />
       </div>
     )
-  }
 
   return (
-    <div className="flex">
-      <BoardSidebar />
-      <div className="container mx-auto px-4 py-24 flex-1">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">게시판</h1>
-            <button
-              onClick={() => router.push('/board/add')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
-            >
-              글쓰기
-            </button>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* 카테고리 사이드바 */}
+      <Sidebar categoryId={null} />
+
+      {/* 메인 컨텐츠 */}
+      <div className="flex-1 pl-4 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8 flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-[#2d5a27aa]">전체글</h1>
+            {session && (
+              <Link
+                href="/board/add"
+                className="bg-[#2d5a27aa] text-white px-6 py-3 rounded-lg 
+                        hover:bg-[#2d5a27] transition-colors duration-200 
+                        shadow-md"
+              >
+                글쓰기
+              </Link>
+            )}
           </div>
 
-          <table className="min-w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  제목
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  작성자
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  작성일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  작업
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts && posts.length > 0 ? (
-                posts.map((post) => (
-                  <tr
-                    key={post._id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => router.push(`/board/${post._id}`)}
-                  >
-                    <td className="px-6 py-4">{post.title}</td>
-                    <td className="px-6 py-4">{post.author}</td>
-                    <td className="px-6 py-4">
+          <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+            {posts.map((post) => (
+              <Link href={`/board/post/${post._id}`} key={post._id}>
+                <div className="border-b p-6 hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {post.title}
+                    </h2>
+                    <span className="text-sm text-gray-500">
                       {new Date(post.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      {session?.user?.name === post.author && ( // 작성자 본인일 경우
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation() // 클릭 이벤트 전파 방지
-                              router.push(`/board/edit/${post._id}`) // 수정 페이지로 이동
-                            }}
-                            className="text-blue-600 hover:underline"
-                          >
-                            수정
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation() // 클릭 이벤트 전파 방지
-                              handleDelete(post._id) // 삭제 처리
-                            }}
-                            className="text-red-600 hover:underline ml-4"
-                          >
-                            삭제
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="text-center py-4">
-                    게시글이 없습니다.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="text-gray-500">작성자: {post.author}</span>
+                    <span className="text-gray-500">
+                      {' '}
+                      | 카테고리: {post.categoryName}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {posts.length === 0 && (
+            <div className="text-center p-4 text-gray-500">
+              게시글이 없습니다.
+            </div>
+          )}
         </div>
       </div>
     </div>

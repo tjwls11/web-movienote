@@ -1,39 +1,36 @@
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
-const Sidebar = () => {
+interface BoardSidebarProps {
+  currentCategory: string
+  setCurrentCategory: (category: string) => void
+}
+
+export default function BoardSidebar({
+  currentCategory,
+  setCurrentCategory,
+}: BoardSidebarProps) {
+  const categories = ['전체글', '영화토론', '영화수다', '후기/리뷰', '스포']
+
   return (
-    <div className="w-64 bg-gray-100 h-screen p-4">
-      <h2 className="text-lg font-bold mb-4">카테고리</h2>
-      <ul className="space-y-2">
-        <li>
-          <Link
-            href="/board/category1"
-            className="text-gray-700 hover:text-blue-500"
+    <div className="w-64 bg-white shadow-lg p-4">
+      <h2 className="text-xl font-bold mb-4">카테고리</h2>
+      <div className="flex flex-col gap-2">
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => setCurrentCategory(category)}
+            className={`p-2 text-left rounded ${
+              currentCategory === category
+                ? 'bg-blue-600 text-white'
+                : 'hover:bg-gray-100'
+            }`}
           >
-            카테고리 1
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/board/category2"
-            className="text-gray-700 hover:text-blue-500"
-          >
-            카테고리 2
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/board/category3"
-            className="text-gray-700 hover:text-blue-500"
-          >
-            카테고리 3
-          </Link>
-        </li>
-        {/* 추가 카테고리 링크 */}
-      </ul>
+            {category}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
-
-export default Sidebar

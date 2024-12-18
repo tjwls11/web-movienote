@@ -255,7 +255,7 @@ export default function MyPage() {
 
               <div className="w-full space-y-3 mt-2">
                 <div className="text-sm text-gray-600">
-                  가입일:{' '}
+                  가입일:
                   {userData?.createdAt
                     ? new Date(userData.createdAt).toLocaleDateString()
                     : new Date().toLocaleDateString()}

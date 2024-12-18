@@ -1,45 +1,80 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
-// API에서 게시글을 가져오는 함수 추가
-const fetchPost = async (id: string) => {
-  const response = await fetch(`/api/posts/${id}`) // 게시글 ID에 따라 API 호출
-  if (!response.ok) {
-    throw new Error('게시글을 가져오는 데 실패했습니다.')
-  }
-  return response.json()
-}
-
-export default function EditPost({ params }: { params: { id: string } }) {
+export default function EditPost() {
   const router = useRouter()
+  const params = useParams()
+  const { data: session } = useSession()
   const [post, setPost] = useState({
     title: '',
     content: '',
+    author: '',
   })
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const loadPost = async () => {
+      if (!params.id) return
+
       try {
-        const existingPost = await fetchPost(params.id) // 게시글 데이터 가져오기
+        const response = await fetch(`/api/posts/${params.id}`)
+        if (!response.ok) throw new Error('게시글을 가져오는 데 실패했습니다.')
+        const existingPost = await response.json()
+
+        // 작성자 검증 부분 수정
+        if (existingPost.author !== session?.user?.name) {
+          alert('수정 권한이 없습니다.')
+          router.push(`/board/post/${params.id}`)
+          return
+        }
+
         setPost({
           title: existingPost.title,
           content: existingPost.content,
+          author: existingPost.author,
         })
       } catch (error) {
-        console.error(error)
+        console.error('Error loading post:', error)
+        router.push('/board')
       }
     }
     loadPost()
-  }, [params.id])
+  }, [params.id, session, router])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 여기에 실제 데이터 수정 로직 구현
-    console.log('수정된 게시글:', post)
-    // 수정 완료 후 상세 페이지로 돌아가기
-    router.push(`/board/${params.id}`)
+    setIsLoading(true)
+
+    try {
+      const response = await fetch(`/api/posts/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: post.title,
+          content: post.content,
+          author: session?.user?.name, // 현재 로그인한 사용자의 이름 전송
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || '게시글 수정에 실패했습니다')
+      }
+
+      router.push(`/board/post/${params.id}`)
+    } catch (error) {
+      console.error('Error updating post:', error)
+      alert(
+        error instanceof Error ? error.message : '게시글 수정에 실패했습니다'
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

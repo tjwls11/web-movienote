@@ -58,9 +58,6 @@ export default function AddMemo() {
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">
-        {session.user?.name}님의 새 기록장
-      </h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label

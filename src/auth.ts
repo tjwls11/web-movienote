@@ -79,34 +79,37 @@ export const authOptions = {
       clientSecret: process.env.AUTH_GITHUB_SECRET || '',
     }),
   ],
-  // 추가 옵션...
+}
+
+async function collection(collection: string) {
+  const db = await connectToDatabase()
+  return db.collection(collection)
 }
 
 const handler = NextAuth({
   ...authOptions,
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google' || account?.provider === 'github') {
-        try {
-          const db = await connectToDatabase()
-          const existingUser = await db.collection('users').findOne({
-            email: user.email,
-          })
+    async signIn({ user, account, profile }) {
+      try {
+        const usersCollection = await collection('users')
+        const existingUser = await usersCollection.findOne({
+          email: user.email,
+        })
 
-          if (!existingUser) {
-            await db.collection('users').insertOne({
-              email: user.email,
-              name: user.name,
-              type: account.provider,
-              createdAt: new Date(),
-            })
-          }
-        } catch (error) {
-          console.error('소셜 로그인 에러:', error)
-          return false
+        if (!existingUser) {
+          await usersCollection.insertOne({
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            createdAt: new Date(),
+          })
         }
+
+        return true
+      } catch (error) {
+        console.error('소셜 로그인 에러:', error)
+        return false
       }
-      return true
     },
     async jwt({ token, user }): Promise<ExtendedJWT> {
       if (user) {

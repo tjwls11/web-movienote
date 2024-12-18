@@ -1,32 +1,27 @@
-import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/libs/mongodb'
+import { auth } from '@/auth'
 
-// 프로필조회 요청 처리
 export async function GET() {
   try {
+    // 현재 로그인된 세션 확인
     const session = await auth()
 
-    if (!session?.user?.email) {
+    if (!session || !session.user?.email) {
       return NextResponse.json(
         { error: '로그인이 필요합니다.' },
         { status: 401 }
       )
     }
 
+    // MongoDB 연결
     const db = await connectToDatabase()
 
-    // 사용자 ID가 없는 경우 처리
-    if (!session.user.id) {
-      return NextResponse.json(
-        { error: '유효하지 않은 사용자입니다.' },
-        { status: 400 }
-      )
-    }
-
-    const user = await db
-      .collection('users')
-      .findOne({ email: session.user.email })
+    // 사용자 정보 조회
+    const user = await db.collection('users').findOne(
+      { email: session.user.email },
+      { projection: { password: 0 } } // 비밀번호 제외
+    )
 
     if (!user) {
       return NextResponse.json(
@@ -35,16 +30,9 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        ...user,
-        id: user._id.toString(),
-        image: user.image || session.user.image || '/default-avatar.png',
-      },
-    })
+    return NextResponse.json(user)
   } catch (error) {
-    console.error('Get user info error:', error)
+    console.error('프로필 조회 에러:', error)
     return NextResponse.json(
       { error: '사용자 정보를 가져오는데 실패했습니다.' },
       { status: 500 }

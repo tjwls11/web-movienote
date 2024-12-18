@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { HiPencilAlt } from 'react-icons/hi'
 import MemoRemoveBtn from './MemoRemoveBtn'
+import Loading from './Loading'
 
 interface Memo {
   _id: string
@@ -72,14 +73,8 @@ export default function MemoDetail({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-          <div className="mt-4 text-lg font-medium text-gray-700">
-            기록장을 불러오는 중...
-          </div>
-          <div className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</div>
-        </div>
+      <div>
+        <Loading pageName="기록장" />
       </div>
     )
   }
@@ -156,6 +151,7 @@ export default function MemoDetail({ id }: { id: string }) {
           </div>
         </div>
         <div className="prose max-w-none mb-8">
+          <h1>{memo.title}</h1>
           <p className="text-gray-600 whitespace-pre-wrap">
             {memo.description}
           </p>

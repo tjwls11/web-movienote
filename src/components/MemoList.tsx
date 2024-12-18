@@ -1,20 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FiPlus } from 'react-icons/fi'
 import Link from 'next/link'
 import { Memo } from '@/types/memo'
+import Loading from './Loading'
 
 interface MemoListProps {
   memos: Memo[]
 }
 
 export default function MemoList({ memos }: MemoListProps) {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // 모든 메모를 표시하도록 수정
+  const [isLoading, setIsLoading] = useState(true)
   const filteredMemos = memos
+
+  useEffect(() => {
+    if (memos) {
+      setIsLoading(false)
+    }
+  }, [memos])
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loading pageName="기록장" />
+      </div>
+    )
+  }
 
   return (
     <div className="flex gap-6">
@@ -22,13 +34,13 @@ export default function MemoList({ memos }: MemoListProps) {
         <div className="flex flex-col space-y-4 max-w-2xl mx-auto">
           {filteredMemos.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-md">
-              <p className="text-gray-600 text-lg mb-4">기록장이 없습니다</p>
+              <p className="text-gray-600 text-lg mb-4">기록이 없습니다</p>
               <Link
                 href="/addMemo"
-                className="bg-green-600 text-white px-6 py-3 rounded-md
+                className="bg-[#2d5a27aa] text-white px-6 py-3 rounded-md
                 hover:bg-green-700 transition-all duration-300 flex items-center gap-2"
               >
-                <FiPlus className="w-5 h-5" />첫 메모 작성하기
+                <FiPlus className="w-5 h-5" />첫 영화기록장 작성하기
               </Link>
             </div>
           ) : (
@@ -56,7 +68,7 @@ export default function MemoList({ memos }: MemoListProps) {
 
         <Link
           href="/addMemo"
-          className="mb-20 fixed bottom-8 right-8 bg-[#56b033a0] text-white rounded-full p-4
+          className=" fixed bottom-8 right-8 bg-[#2d5a27aa] text-white rounded-full p-4
               hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl
               transform hover:-translate-y-1 group flex items-center gap-2"
         >

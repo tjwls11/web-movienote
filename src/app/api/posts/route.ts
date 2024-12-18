@@ -1,33 +1,66 @@
-import connectMongoDB from '@/libs/mongodb'
-import Post from '@/models/post'
+import { connectToDatabase } from '@/libs/mongodb'
 import { NextResponse } from 'next/server'
 
-// 게시글 목록 조회 및 작성
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-    await connectMongoDB()
-    const posts = await Post.find() // 모든 게시글 조회
-    return NextResponse.json(posts)
+    const body = await request.json()
+    const { title, content, author, date, categoryId, categoryName } = body
+
+    // 데이터 유효성 검사
+    if (!title || !content || !author || !categoryId) {
+      return NextResponse.json(
+        { message: '필수 항목이 누락되었습니다.' },
+        { status: 400 }
+      )
+    }
+
+    const db = await connectToDatabase()
+    const result = await db.collection('posts').insertOne({
+      title,
+      content,
+      author,
+      date: date || new Date(),
+      categoryId,
+      categoryName,
+      createdAt: new Date(),
+    })
+
+    return NextResponse.json({ _id: result.insertedId }, { status: 201 })
   } catch (error) {
-    console.error('Error in GET posts:', error)
+    console.error('POST /api/posts error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { message: '게시글 작성에 실패했습니다.' },
       { status: 500 }
     )
   }
 }
 
-// 게시글 작성
-export async function POST(request: Request) {
+export async function GET() {
   try {
-    await connectMongoDB()
-    const data = await request.json()
-    const post = await Post.create(data)
-    return NextResponse.json(post)
+    console.log('API: Starting to fetch posts')
+    const db = await connectToDatabase()
+    console.log('API: Database connected')
+
+    const posts = await db
+      .collection('posts')
+      .find({})
+      .sort({ date: -1 })
+      .toArray()
+
+    console.log('API: Posts found:', posts)
+
+    if (!posts || posts.length === 0) {
+      console.log('API: No posts found')
+      return NextResponse.json({ posts: [] })
+    }
+
+    return NextResponse.json(posts)
   } catch (error) {
-    console.error('Error in POST posts:', error)
+    console.error('GET /api/posts error:', error)
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred'
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { message: '게시글을 불러오는데 실패했습니다.', error: errorMessage },
       { status: 500 }
     )
   }

@@ -1,0 +1,6 @@
+model RecentMovie {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userName  String
+  movieId   String
+  createdAt DateTime @default(now())
+}

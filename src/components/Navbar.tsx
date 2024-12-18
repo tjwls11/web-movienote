@@ -3,30 +3,33 @@
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession, signOut, getSession } from 'next-auth/react'
+
+interface User {
+  id: string
+  email: string
+  image?: string
+  name?: string
+  [key: string]: any
+}
 
 export default function Navbar() {
-  const { data: session, status } = useSession()
-  const [currentImage, setCurrentImage] = useState('/default-avatar.png')
+  const { data: session } = useSession()
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      if (session?.user) {
-        try {
-          const response = await fetch('/api/user/profile')
-          const data = await response.json()
-
+    if (session?.user?.email) {
+      // 세션이 있을 때만 한 번 프로필 정보를 가져옴
+      fetch('/api/user/profile')
+        .then((res) => res.json())
+        .then((data) => {
           if (data.success) {
-            setCurrentImage(data.user.image)
+            setUser(data.user)
           }
-        } catch (error) {
-          console.error('Failed to fetch user info:', error)
-        }
-      }
+        })
+        .catch(console.error)
     }
-
-    fetchUserInfo()
-  }, [session])
+  }, [session]) // session이 변경될 때만 실행
 
   const handleSignOut = async () => {
     await signOut({ redirect: true, callbackUrl: '/' })
@@ -40,22 +43,22 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-6">
-          {status === 'authenticated' ? (
+          {session ? (
             <>
               <div className="flex items-center gap-4">
                 <Link href="/movie" className="text-green-800 font-bold">
-                  movie
+                  MOVIE
                 </Link>
                 <Link href="/board" className="text-green-800 font-bold">
-                  community
+                  COMMUNITY
                 </Link>
                 <Link href="/memo" className="text-green-800 font-bold">
-                  record
+                  MYNOTE
                 </Link>
                 <Link href="/mypage">
                   <Image
                     className="rounded-full cursor-pointer ring-2 ring-[#2d5a27] hover:ring-[#1a3517] transition-colors"
-                    src={currentImage}
+                    src={user?.image || '/default-avatar.png'}
                     width={40}
                     height={40}
                     alt={session.user?.name || 'user'}
@@ -73,13 +76,10 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-4">
               <Link href="/movie" className="text-green-800 font-bold">
-                movie
+                MOVIE
               </Link>
               <Link href="/board" className="text-green-800 font-bold">
-                community
-              </Link>
-              <Link href="/memo" className="text-green-800 font-bold">
-                record
+                COMMUNITY
               </Link>
               <Link
                 href="/login"
