@@ -16,7 +16,7 @@ interface Comment {
 }
 
 export default function PostPage() {
-  const params = useParams()
+  const params = useParams() as { id: string }
   const { data: session } = useSession()
   const [initialComments, setInitialComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
